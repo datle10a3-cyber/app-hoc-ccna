@@ -7,25 +7,21 @@ import { repository } from '@/lib/db/repository';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Lesson, CiscoCommand, Topology, PersonalNote } from '@/lib/types';
-import { ciscoLibrary } from '@/lib/cisco-library';
-import { libraryFavorites } from '@/lib/cisco-library-favorites';
 
 export default function FavoritesPage() {
   const [favLessons, setFavLessons] = useState<Lesson[]>([]);
   const [favCommands, setFavCommands] = useState<CiscoCommand[]>([]);
   const [favTopologies, setFavTopologies] = useState<Topology[]>([]);
   const [favNotes, setFavNotes] = useState<PersonalNote[]>([]);
-  const [favLibraryIds, setFavLibraryIds] = useState<string[]>([]);
 
   useEffect(() => {
     setFavLessons(repository.getLessons().filter(l => l.isFavorite));
     setFavCommands(repository.getCommands().filter(c => c.isFavorite));
     setFavTopologies(repository.getTopologies().filter(t => t.isFavorite));
     setFavNotes(repository.getNotes().filter(n => n.isFavorite));
-    setFavLibraryIds(libraryFavorites());
   }, []);
 
-  const isEmpty = favLessons.length + favCommands.length + favTopologies.length + favNotes.length + favLibraryIds.length === 0;
+  const isEmpty = favLessons.length + favCommands.length + favTopologies.length + favNotes.length === 0;
 
   return (
     <div className="space-y-4 max-w-5xl mx-auto">
@@ -41,7 +37,6 @@ export default function FavoritesPage() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {ciscoLibrary.filter(article => favLibraryIds.includes(article.id)).map(article => <Link key={article.id} href={`/commands/${article.id}`}><Card className="collection-card cursor-pointer"><CardContent className="p-3 flex items-center gap-2"><Terminal className="w-4 h-4 shrink-0 text-cyan-400" /><span className="min-w-0 flex-1 truncate text-xs font-semibold text-foreground">{article.title}</span><Badge variant="info" className="text-[10px]">{article.kind === 'full' ? 'Full Config' : 'Lệnh'}</Badge></CardContent></Card></Link>)}
         {favCommands.map(cmd => (
           <Link key={cmd.id} href={`/commands/${cmd.id}`}>
             <Card className="collection-card cursor-pointer">

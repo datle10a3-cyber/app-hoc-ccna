@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Search, BookOpen, Terminal, Network, StickyNote, X } from 'lucide-react';
 import { repository } from '@/lib/db/repository';
 import { Badge } from '@/components/ui/badge';
-import { ciscoLibrary, matchesLibraryArticle } from '@/lib/cisco-library';
 
 interface Props {
   isOpen: boolean;
@@ -34,8 +33,7 @@ export function CmdKSearchModal({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   const results = query.trim() ? repository.searchAll(query) : { lessons: [], commands: [], topologies: [], notes: [] };
-  const libraryResults = query.trim() ? ciscoLibrary.filter(article => matchesLibraryArticle(article, query)) : [];
-  const hasResults = results.lessons.length + results.commands.length + results.topologies.length + results.notes.length + libraryResults.length > 0;
+  const hasResults = results.lessons.length + results.commands.length + results.topologies.length + results.notes.length > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
@@ -79,9 +77,6 @@ export function CmdKSearchModal({ isOpen, onClose }: Props) {
                 <Badge variant="info" className="ml-auto text-[10px]">Lệnh</Badge>
               </Link>
             ))}
-
-            {libraryResults.slice(0, 12).map(article => <Link key={article.id} href={`/commands/${article.id}`} onClick={onClose} className="flex items-center gap-2 rounded-md px-3 py-2 text-xs hover:bg-muted"><Terminal className="h-3.5 w-3.5 shrink-0 text-cyan-400" /><span className="min-w-0 flex-1 truncate font-medium text-foreground">{article.title}</span><Badge variant="info" className="text-[10px]">{article.kind === 'full' ? 'Full Config' : 'Lệnh'}</Badge></Link>)}
-            {libraryResults.length > 12 && <Link href={`/commands?q=${encodeURIComponent(query)}`} onClick={onClose} className="block px-3 py-2 text-xs text-cyan-300 hover:underline">Xem tất cả {libraryResults.length} kết quả trong Thư viện Lệnh</Link>}
 
             {results.topologies.map(t => (
               <Link key={t.id} href={`/topologies/${t.id}`} onClick={onClose}
