@@ -6,13 +6,22 @@ export type ArticlePart = {
   level?: number;
 };
 
-const commandPattern = /^(?:[\w.-]+(?:\([^)]*\))?[#>]\s*|(?:enable|disable|configure(?:\s+terminal)?|conf\s+t|end|exit|logout|reload|write(?:\s+\S+)?|erase(?:\s+\S+)?|copy\s+\S+|show\s+\S+|debug\s+\S+|undebug\s+\S+|clear\s+\S+|ping\s+\S+|traceroute\s+\S+|hostname\s+\S+|interface\s+\S+|vlan\s+\d+|name\s+\S+|description\s+\S+|switchport\s+\S+|spanning-tree\s+\S+|channel-group\s+\S+|channel-protocol\s+\S+|port-channel\s+\S+|router\s+\S+|network\s+\S+|neighbor\s+\S+|passive-interface\s+\S+|ip\s+(?:address|route|routing|default-gateway|dhcp|nat|access-group|helper-address|ospf|domain-name|ssh|http|sla|name-server|dns|verify|arp|forward-protocol)\b.*|ipv6\s+\S+|no\s+\S+|no$|shutdown$|standby\s+\S+|encapsulation\s+\S+|access-list\s+\S+|access-class\s+\S+|line\s+\S+|login(?:\s+\S+)?|password\s+\S+|username\s+\S+|service\s+\S+|crypto\s+\S+|transport\s+\S+|banner\s+\S+|default-information\s+\S+|redistribute\s+\S+|ntp\s+\S+|logging\s+\S+|snmp-server\s+\S+|aaa\s+\S+|aaa$|track\s+\S+|delay\s+\S+|frequency\s+\S+|ip-sla\s+\S+|!))\s*$/i;
+const commandRoot = /^(?:enable|disable|configure|conf|end|exit|logout|reload|write|erase|copy|show|debug|undebug|clear|ping|traceroute|hostname|interface|vlan|name|description|switchport|spanning-tree|channel-group|channel-protocol|port-channel|router|network|neighbor|passive-interface|ip|ipv6|no|shutdown|standby|encapsulation|access-list|access-class|line|login|password|username|service|crypto|transport|banner|default-information|redistribute|ntp|logging|snmp-server|aaa|track|delay|frequency|duplex|speed|negotiation|mac-address|authentication|timers|key|string|clock|boot|cdp|lldp|errdisable|power|voice|storm-control|spanning|archive|file|license|monitor|terminal|ip-sla|ip sla|default-router|dns-server|domain-name|lease|pool|address|permit|deny|remark|sequence|seq|area|passive-interface|maximum-paths|maximum-prefix|default-metric|metric|offset-list|summary-address|aggregate-address|distribute-list|route-map|match|set|continue|call|exit-address-family|update-source|next-hop-self|local-preference|weight|remote-as|activate|send-community|soft-reconfiguration|version|authentication|ppp|pppoe|dialer|encapsulation|mtu|bandwidth|delay|load-interval|keepalive|auto|channel-group|lacp|pagp|storm-control|spanning-tree|dot1x|dot1q|switchport|vtp|snmp-server|errdisable|power|voice|!)(?:\s|$)/i;
 
 function isCommand(value: string): boolean {
-  const line = value.trim();
+  const line = value.trim().replace(/^[\w.-]+(?:\([^)]*\))?[#>]\s*/, '');
   if (/^(?:System configuration has been modified\.|Proceed with reload\?|Would you like to enter the initial configuration dialog\?|\[confirm\]|Building configuration\.\.\.)/i.test(line)) return true;
-  if (!line || /[.!?]$/.test(line) && !/^!$/.test(line)) return false;
-  return commandPattern.test(line);
+  if (!line) return false;
+  if (/^(?:show|ping|traceroute|copy)\s+\S/i.test(line)) return true;
+  if (/^configure\s+(?:terminal|memory|replace)\b/i.test(line) || /^conf\s+t$/i.test(line)) return true;
+  if (/^no\s+(?:ip|ipv6|shutdown|switchport|spanning-tree|standby|service|logging|cdp|lldp|router|network|passive-interface|access-list|login|aaa|crypto|username|boot|vtp|ip domain|ip routing)\b/i.test(line)) return true;
+  if (/^ip\s+(?:address|route|routing|default-gateway|dhcp|nat|access-group|helper-address|ospf|domain-name|ssh|http|sla|name-server|dns|verify|arp|forward-protocol|default-network|classless|cef|flow|access-list|tcp|inspect|policy|virtual-reassembly|pim|multicast-routing|igmp|wccp|directed-broadcast|proxy-arp|unreachables|redirects|mtu|source-route)\b/i.test(line)) return true;
+  if (/^ipv6\s+(?:address|route|unicast-routing|enable|nd| ospf|dhcp)\b/i.test(line)) return true;
+  if (/^standby\s+\d+\s+(?:ip|priority|preempt|track|authentication|timers|name|use-bia|mac-address)\b/i.test(line)) return true;
+  if (/^interface\s+[\w./:-]+(?:\s+[\w./:-]+)*$/i.test(line)) return true;
+  if (/^(?:write|erase|reload|end|exit|logout|enable|disable|shutdown|login|aaa|no|!)(?:\s+.*)?$/i.test(line)) return true;
+  if (/^(?:network|neighbor)\s+\S+\s+(?:area|remote-as|activate|update-source|next-hop-self|route-map|weight|password)\b/i.test(line)) return true;
+  return commandRoot.test(line) && !/[.!?]$/.test(line);
 }
 
 function headingInfo(value: string): { kind: 'heading' | 'step'; level: number; content: string } | null {
