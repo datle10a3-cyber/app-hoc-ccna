@@ -19,6 +19,8 @@ interface FormStep {
   command: string;
 }
 
+const COMMAND_FORM_DRAFT_KEY = 'ccna-command-form-draft-v1';
+
 export default function CommandsPage() {
   const [query, setQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -31,12 +33,57 @@ export default function CommandsPage() {
   const [steps, setSteps] = useState<FormStep[]>([
     { id: '1', explanation: '', command: '' }
   ]);
+  const [draftRestored, setDraftRestored] = useState(false);
 
   const { toast } = useToast();
 
   useEffect(() => {
     setCommands(repository.getCommands());
+    try {
+      const savedDraft = localStorage.getItem(COMMAND_FORM_DRAFT_KEY);
+      if (savedDraft) {
+        const draft = JSON.parse(savedDraft) as {
+          isAddOpen?: boolean;
+          editingId?: string | null;
+          cmdTitle?: string;
+          steps?: FormStep[];
+        };
+        if (draft.isAddOpen && Array.isArray(draft.steps) && draft.steps.length > 0) {
+          setIsAddOpen(true);
+          setEditingCmd(draft.editingId ? repository.getCommands().find(command => command.id === draft.editingId) || null : null);
+          setCmdTitle(typeof draft.cmdTitle === 'string' ? draft.cmdTitle : '');
+          setSteps(draft.steps.map((step, index) => ({
+            id: typeof step.id === 'string' ? step.id : `restored-${index}`,
+            explanation: typeof step.explanation === 'string' ? step.explanation : '',
+            command: typeof step.command === 'string' ? step.command : '',
+          })));
+        }
+      }
+    } catch {
+      localStorage.removeItem(COMMAND_FORM_DRAFT_KEY);
+    } finally {
+      setDraftRestored(true);
+    }
   }, []);
+
+  // Keep the open form across route changes, reloads, and browser tab suspension.
+  useEffect(() => {
+    if (!draftRestored) return;
+    try {
+      if (!isAddOpen) {
+        localStorage.removeItem(COMMAND_FORM_DRAFT_KEY);
+        return;
+      }
+      localStorage.setItem(COMMAND_FORM_DRAFT_KEY, JSON.stringify({
+        isAddOpen: true,
+        editingId: editingCmd?.id || null,
+        cmdTitle,
+        steps,
+      }));
+    } catch {
+      // The form remains usable if browser storage is unavailable or full.
+    }
+  }, [draftRestored, isAddOpen, editingCmd, cmdTitle, steps]);
 
   const filtered = commands.filter(cmd => matchesCommandItem(cmd, query))
     .sort((left, right) => matchingCommandLines(right, query).length - matchingCommandLines(left, query).length);
@@ -46,6 +93,14 @@ export default function CommandsPage() {
     setCmdTitle('');
     setSteps([{ id: '1', explanation: '', command: '' }]);
     setIsAddOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsAddOpen(false);
+    setEditingCmd(null);
+    setCmdTitle('');
+    setSteps([{ id: '1', explanation: '', command: '' }]);
+    try { localStorage.removeItem(COMMAND_FORM_DRAFT_KEY); } catch { /* Ignore unavailable storage. */ }
   };
 
   const handleOpenEdit = (cmd: CiscoCommand) => {
@@ -124,8 +179,7 @@ export default function CommandsPage() {
     setCommands(repository.getCommands());
     toast('Đã lưu!', editingCmd ? `Đã cập nhật bộ lệnh "${cmdTitle}".` : `Bộ lệnh "${cmdTitle}" đã được lưu.`, 'success');
     
-    setIsAddOpen(false);
-    setEditingCmd(null);
+    handleCloseForm();
   };
 
   const handleDelete = (id: string) => {
@@ -233,7 +287,7 @@ export default function CommandsPage() {
       {/* Add / Edit Modal */}
       <Modal 
         isOpen={isAddOpen} 
-        onClose={() => setIsAddOpen(false)} 
+        onClose={handleCloseForm}
         title={editingCmd ? "Sửa item lệnh" : "Thêm item lệnh"}
       >
         <form onSubmit={handleSave} className="space-y-4 max-h-[78vh] overflow-y-auto pr-1">
@@ -303,7 +357,7 @@ export default function CommandsPage() {
           </div>
 
           <div className="flex justify-end gap-2 pt-2 border-t border-border">
-            <Button type="button" variant="outline" size="sm" onClick={() => setIsAddOpen(false)}>Hủy</Button>
+            <Button type="button" variant="outline" size="sm" onClick={handleCloseForm}>Hủy</Button>
             <Button type="submit" size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-xs">
               {editingCmd ? 'Cập nhật item' : 'Lưu item'}
             </Button>
