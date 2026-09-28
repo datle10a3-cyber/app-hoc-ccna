@@ -1,0 +1,191 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 42 35% 98%;
+    --foreground: 24 35% 12%;
+
+    --card: 40 30% 99%;
+    --card-foreground: 24 35% 12%;
+
+    --popover: 40 30% 99%;
+    --popover-foreground: 24 35% 12%;
+
+    --primary: 38 92% 48%;
+    --primary-foreground: 40 35% 99%;
+
+    --secondary: 40 20% 93%;
+    --secondary-foreground: 24 35% 12%;
+
+    --muted: 40 20% 93%;
+    --muted-foreground: 24 15% 42%;
+
+    --accent: 38 90% 93%;
+    --accent-foreground: 38 90% 28%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 20% 86%;
+    --input: 40 20% 86%;
+    --ring: 38 92% 48%;
+
+    --radius: 0.625rem;
+  }
+
+  .dark {
+    --background: 36 22% 7%;
+    --foreground: 40 25% 96%;
+
+    --card: 36 20% 10%;
+    --card-foreground: 40 25% 96%;
+
+    --popover: 36 20% 10%;
+    --popover-foreground: 40 25% 96%;
+
+    --primary: 38 92% 50%;
+    --primary-foreground: 36 22% 7%;
+
+    --secondary: 36 18% 15%;
+    --secondary-foreground: 40 25% 96%;
+
+    --muted: 36 18% 15%;
+    --muted-foreground: 40 12% 65%;
+
+    --accent: 36 22% 18%;
+    --accent-foreground: 38 92% 60%;
+
+    --destructive: 0 63% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 36 18% 18%;
+    --input: 36 18% 18%;
+    --ring: 38 92% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html, body {
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Cisco CLI Terminal - Warm Amber Theme */
+.cisco-terminal {
+  @apply font-mono rounded-xl p-3.5 border shadow-md overflow-x-auto text-xs leading-relaxed;
+  background: #14120e;
+  color: #fef08a;
+  border-color: rgba(245, 158, 11, 0.25);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* One continuous writing surface: images stay in the text flow. */
+.doc-rich-editor {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+  line-height: 1.75;
+  font-size: 0.875rem;
+  cursor: text;
+}
+.doc-rich-content {
+  overflow-x: hidden;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.doc-rich-editor p, .doc-rich-content p { margin: 0.5rem 0; }
+.doc-rich-editor h1, .doc-rich-content h1 { font-size: 1.5em; font-weight: 700; margin: 0.75rem 0; }
+.doc-rich-editor h2, .doc-rich-content h2 { font-size: 1.3em; font-weight: 700; margin: 0.7rem 0; }
+.doc-rich-editor h3, .doc-rich-content h3 { font-size: 1.15em; font-weight: 700; margin: 0.6rem 0; }
+.doc-rich-editor ul, .doc-rich-content ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
+.doc-rich-editor ol, .doc-rich-content ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+.doc-rich-editor blockquote, .doc-rich-content blockquote { border-left: 3px solid hsl(var(--border)); padding-left: 0.75rem; margin: 0.75rem 0; }
+.doc-rich-editor pre, .doc-rich-content pre { white-space: pre-wrap; font-family: monospace; }
+.doc-rich-editor table, .doc-rich-content table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  max-width: 100%;
+  margin: 0.75rem 0;
+  line-height: 1.5;
+}
+.doc-rich-editor th, .doc-rich-editor td, .doc-rich-content th, .doc-rich-content td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.4rem 0.6rem;
+  min-width: 0;
+  vertical-align: top;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.doc-rich-editor th, .doc-rich-content th { background: hsl(var(--muted) / 0.5); font-weight: 700; }
+.doc-rich-editor caption, .doc-rich-content caption { text-align: left; font-weight: 600; margin-bottom: 0.25rem; }
+.doc-rich-editor img, .doc-rich-content img { display: block; width: auto; height: auto; max-width: min(100%, 480px); max-height: min(45vh, 360px); object-fit: contain; border-radius: 0.5rem; margin: 0.75rem 0; }
+.doc-rich-content img { cursor: zoom-in; }
+.doc-rich-editor figure, .doc-rich-content figure { max-width: 100%; margin: 0.75rem 0; }
+.doc-rich-editor figure[style*="width"] img, .doc-rich-content figure[style*="width"] img { width: 100%; max-width: 100%; }
+.doc-rich-editor:empty::before {
+  content: attr(data-placeholder);
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+}
+.doc-inline-image {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0.75rem 0;
+  cursor: pointer;
+  line-height: 0;
+}
+.doc-inline-image img,
+.doc-display-image img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(100%, 480px);
+  max-height: min(45vh, 360px);
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+.doc-inline-image[data-selected="true"] img {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+
+/* Hide scrollbars */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full;
+  background: rgba(245, 158, 11, 0.25);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.45);
+}
