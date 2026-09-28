@@ -14,6 +14,7 @@ import { useToast } from '@/components/ui/toast';
 import { FormattedInlineText } from '@/components/ui/formatted-inline-text';
 import { FormattedArticleText } from '@/components/ui/formatted-article-text';
 import { richDocumentPlainText } from '@/lib/rich-document';
+import { parseArticleText } from '@/lib/article-format';
 
 export default function TopologyDetailPage() {
   const params = useParams();
@@ -35,7 +36,7 @@ export default function TopologyDetailPage() {
 
   const copyText = [topology.title, topology.description, topology.devices.join(', '), topology.notes || '', ...(topology.nodes || []).map(node => `${node.label} (${node.type})${node.ip ? ` - ${node.ip}` : ''}`), ...(topology.links || []).map(link => `${link.from} ↔ ${link.to}${link.label ? ` (${link.label})` : ''}`)].filter(Boolean).join('\n\n');
   const plainDescription = richDocumentPlainText(topology.description || '');
-  const descriptionAsArticle = plainDescription.length > 260 || /(?:^|\n)\s*(?:[IVXLCDM]+\.|[A-Z]\.)\s+/.test(plainDescription);
+  const descriptionAsArticle = plainDescription.length > 260 || parseArticleText(plainDescription).some(part => ['heading', 'step', 'code', 'diagram', 'table'].includes(part.kind));
   const readTime = Math.max(1, Math.ceil(richDocumentPlainText(`${topology.description || ''} ${topology.notes || ''}`).split(/\s+/).filter(Boolean).length / 180));
   const handleCopy = () => {
     navigator.clipboard.writeText(richDocumentPlainText(copyText));

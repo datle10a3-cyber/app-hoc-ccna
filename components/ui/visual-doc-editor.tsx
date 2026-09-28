@@ -6,6 +6,7 @@ import { readImageFile } from '@/lib/utils';
 import { repository } from '@/lib/db/repository';
 import { ImageLightbox } from './image-lightbox';
 import { isRichDocument, richDocumentHtml, RICH_DOCUMENT_PREFIX, sanitizeRichHtml } from '@/lib/rich-document';
+import { articlePartsToHtml, parseArticleDocument, parseArticleText } from '@/lib/article-format';
 
 export interface VisualDocItem {
   id: string;
@@ -285,10 +286,16 @@ export function VisualDocEditor({ initialText, onChange, onDocItemsChange, compa
     if (!root) return;
     const clipboardHtml = event.clipboardData.getData('text/html');
     const safeHtml = clipboardHtml ? sanitizeRichHtml(clipboardHtml) : '';
-    if (safeHtml && /<(?:table|p|div|h[1-6]|ul|ol|strong|b|em|i|u|img|br)\b/i.test(safeHtml)) {
+    const clipboardText = event.clipboardData.getData('text/plain');
+    const sourceParts = safeHtml ? parseArticleDocument(RICH_DOCUMENT_PREFIX + safeHtml) : parseArticleText(clipboardText);
+    const hasStructure = sourceParts.some(part => ['heading', 'step', 'code', 'diagram'].includes(part.kind));
+    const hasMarkdownImage = /!\[[^\]]*\]\(/.test(clipboardText);
+    const formattedHtml = hasStructure && !hasMarkdownImage ? articlePartsToHtml(sourceParts) : '';
+    const htmlToInsert = formattedHtml || (safeHtml && /<(?:table|p|div|h[1-6]|ul|ol|strong|b|em|i|u|img|br|pre)\b/i.test(safeHtml) ? safeHtml : '');
+    if (htmlToInsert) {
       event.preventDefault();
       const range = selectionRange(root);
-      const fragment = range.createContextualFragment(safeHtml);
+      const fragment = range.createContextualFragment(htmlToInsert);
       const last = fragment.lastChild;
       range.deleteContents();
       range.insertNode(fragment);
@@ -308,7 +315,7 @@ export function VisualDocEditor({ initialText, onChange, onDocItemsChange, compa
       handleImageFile(file, selectionRange(root));
       return;
     }
-    // Plain text and standalone clipboard images retain the original editor behavior.
+    // Single plain lines and standalone clipboard images retain the original editor behavior.
   };
 
   const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {

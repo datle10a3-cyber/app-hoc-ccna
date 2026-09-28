@@ -16,21 +16,13 @@ import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { useToast } from '@/components/ui/toast';
 
 import { FormattedInlineText } from '@/components/ui/formatted-inline-text';
+import { FormattedArticleText } from '@/components/ui/formatted-article-text';
 import { isRichDocument, richDocumentPlainText } from '@/lib/rich-document';
 
 function isGenericTitle(title?: string): boolean {
   if (!title) return true;
   const t = title.trim().toLowerCase();
   return ['lý thuyết', 'lệnh cisco', 'ghi chú', 'cảnh báo', 'paragraph', 'block', 'nội dung', 'chưa phân loại'].includes(t);
-}
-
-function isHeadingLine(text: string): boolean {
-  const t = text.trim();
-  if (!t) return false;
-  if (/^\d+[\.\)]\s+/.test(t)) return true;
-  if (/^(mục tiêu|mô hình|cấu hình|kiểm tra|yêu cầu|bảng ip|port:)/i.test(t)) return true;
-  if (t.endsWith(':') && t.length <= 40 && !t.includes('\n')) return true;
-  return false;
 }
 
 function BlockRenderer({ block, index, onZoomImage }: { block: LessonBlock; index: number; onZoomImage: (url: string) => void }) {
@@ -89,7 +81,7 @@ function BlockRenderer({ block, index, onZoomImage }: { block: LessonBlock; inde
             <span>{showTitle ? block.title : 'Lưu Ý Quan Trọng'}</span>
           </div>
           <div className="pl-6">
-            <FormattedInlineText text={block.content} onZoomImage={onZoomImage} className="text-xs sm:text-sm text-foreground/90 leading-relaxed" />
+            <FormattedArticleText text={block.content} onZoomImage={onZoomImage} />
           </div>
         </div>
       ) : block.type === 'note' ? (
@@ -99,7 +91,7 @@ function BlockRenderer({ block, index, onZoomImage }: { block: LessonBlock; inde
             <span>{showTitle ? block.title : 'Ghi Chú Trọng Tâm'}</span>
           </div>
           <div className="pl-6">
-            <FormattedInlineText text={block.content} onZoomImage={onZoomImage} className="text-xs sm:text-sm text-foreground/90 leading-relaxed" />
+            <FormattedArticleText text={block.content} onZoomImage={onZoomImage} />
           </div>
         </div>
       ) : block.type === 'heading' ? (
@@ -110,48 +102,10 @@ function BlockRenderer({ block, index, onZoomImage }: { block: LessonBlock; inde
               {block.title || block.content}
             </h2>}
         </div>
-      ) : (
-        (() => {
-          const textContent = block.content || '';
-          const lines = textContent.split('\n');
-          const firstLine = lines[0]?.trim() || '';
-
-          if (!isRichDocument(textContent) && (showTitle || isHeadingLine(firstLine) || isHeadingLine(textContent))) {
-            const headerTitle = showTitle ? block.title : firstLine;
-            const bodyContent = showTitle 
-              ? textContent 
-              : (isHeadingLine(firstLine) ? lines.slice(1).join('\n').trim() : textContent);
-
-            return (
-              <div className="space-y-2">
-                <div className="pt-3 pb-1 border-b border-amber-500/25">
-                  <h3 className="text-base sm:text-lg font-black text-amber-500 dark:text-amber-400 flex items-center gap-2 tracking-tight">
-                    <span className="w-2 h-4 bg-amber-500 rounded-xs shrink-0" />
-                    {headerTitle}
-                  </h3>
-                </div>
-                {bodyContent && (
-                  <div className="pl-1">
-                    <FormattedInlineText 
-                      text={bodyContent} 
-                      onZoomImage={onZoomImage} 
-                      className="text-xs sm:text-sm text-foreground/95 leading-relaxed font-medium" 
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          return (
-            <FormattedInlineText 
-              text={textContent} 
-              onZoomImage={onZoomImage} 
-              className="text-xs sm:text-sm text-foreground/95 leading-relaxed font-medium" 
-            />
-          );
-        })()
-      )}
+      ) : <div className="space-y-2">
+        {showTitle && <h3 className="article-step">{block.title}</h3>}
+        <FormattedArticleText text={block.content || ''} onZoomImage={onZoomImage} />
+      </div>}
 
 
       {/* Attached Block Image */}
