@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { useToast } from '@/components/ui/toast';
+import { getLibraryArticle } from '@/lib/cisco-library';
+import { LibraryDetail } from '@/components/commands/library-detail';
 
 export default function CommandDetailPage() {
   const params = useParams();
@@ -26,6 +28,8 @@ export default function CommandDetailPage() {
     if (id) setCmd(repository.getCommandById(id) || null);
   }, [id]);
 
+  const libraryArticle = getLibraryArticle(id);
+  if (libraryArticle) return <LibraryDetail key={libraryArticle.id} article={libraryArticle} />;
   if (!cmd) return <p className="text-sm text-muted-foreground text-center py-12">Không tìm thấy lệnh.</p>;
 
   const hasSteps = cmd.steps && cmd.steps.length > 0;

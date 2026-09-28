@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  Terminal, Search, Plus, Copy, Check, Trash2, PlusCircle, ChevronRight, Edit3
+  Terminal, Search, Plus, Copy, Check, Trash2, PlusCircle, ChevronRight, Edit3, Star, Layers3
 } from 'lucide-react';
 import { repository } from '@/lib/db/repository';
 import { CiscoCommand, CommandStep } from '@/lib/types';
@@ -12,6 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
 import { commandItemText, matchesCommandItem, matchingCommandLines } from '@/lib/command-items';
+import { articleInCategory, ciscoLibrary, libraryCategories, matchesLibraryArticle } from '@/lib/cisco-library';
+import { libraryFavorites, toggleLibraryFavorite } from '@/lib/cisco-library-favorites';
 
 interface FormStep {
   id: string;
@@ -25,6 +27,9 @@ export default function CommandsPage() {
   const [query, setQuery] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [commands, setCommands] = useState<CiscoCommand[]>([]);
+  const [category, setCategory] = useState('TẤT CẢ');
+  const [tag, setTag] = useState('');
+  const [libraryFavs, setLibraryFavs] = useState<string[]>([]);
 
   // Add / Edit Form State
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -39,6 +44,10 @@ export default function CommandsPage() {
 
   useEffect(() => {
     setCommands(repository.getCommands());
+    setLibraryFavs(libraryFavorites());
+    const urlQuery = new URLSearchParams(window.location.search);
+    setTag(urlQuery.get('tag') || '');
+    setQuery(urlQuery.get('q') || '');
     try {
       const savedDraft = localStorage.getItem(COMMAND_FORM_DRAFT_KEY);
       if (savedDraft) {
@@ -85,8 +94,9 @@ export default function CommandsPage() {
     }
   }, [draftRestored, isAddOpen, editingCmd, cmdTitle, steps]);
 
-  const filtered = commands.filter(cmd => matchesCommandItem(cmd, query))
+  const filtered = commands.filter(cmd => (category === 'TẤT CẢ' || category === 'CỦA TÔI' || (category === 'YÊU THÍCH' && cmd.isFavorite)) && (!tag || cmd.tags?.includes(tag)) && matchesCommandItem(cmd, query))
     .sort((left, right) => matchingCommandLines(right, query).length - matchingCommandLines(left, query).length);
+  const filteredLibrary = ciscoLibrary.filter(article => (category === 'TẤT CẢ' || (category === 'YÊU THÍCH' && libraryFavs.includes(article.id)) || articleInCategory(article, category)) && (!tag || article.tags.includes(tag)) && matchesLibraryArticle(article, query));
 
   const handleOpenAdd = () => {
     setEditingCmd(null);
@@ -216,8 +226,27 @@ export default function CommandsPage() {
         />
       </div>
 
+      <div className="flex flex-wrap gap-1.5" aria-label="Nhóm lệnh">
+        {['TẤT CẢ', ...libraryCategories, 'YÊU THÍCH', 'CỦA TÔI'].map(group => <button key={group} type="button" onClick={() => setCategory(group)} aria-pressed={category === group} className={`rounded-md border px-2.5 py-1.5 text-[11px] font-semibold transition-colors ${category === group ? 'border-cyan-500/60 bg-cyan-500/15 text-cyan-300' : group === 'FULL CONFIG' ? 'border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10' : 'border-border text-muted-foreground hover:text-foreground'}`}>{group === 'FULL CONFIG' && <Layers3 className="mr-1 inline h-3.5 w-3.5" />}{group}</button>)}
+      </div>
+      {tag && <div className="flex items-center gap-2 text-xs text-cyan-300">Tag: {tag}<button type="button" onClick={() => { setTag(''); history.replaceState(null, '', '/commands'); }} className="underline">Xóa lọc</button></div>}
+      <p className="text-xs text-muted-foreground">{filteredLibrary.length + filtered.length} bài phù hợp · Tìm theo tên, lệnh, tag, công nghệ hoặc interface.</p>
+
+      <div className="space-y-2">
+        {filteredLibrary.map(article => <Card key={article.id} className="collection-card group"><CardContent className="flex items-start gap-2 p-3 sm:p-3.5">
+          <Link href={`/commands/${article.id}`} className="min-w-0 flex-1 space-y-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400">
+            <div className="flex flex-wrap items-center gap-2"><span className={`rounded border px-1.5 py-0.5 font-mono text-[10px] ${article.kind === 'full' ? 'border-emerald-500/40 text-emerald-400' : 'border-cyan-500/30 text-cyan-300'}`}>{article.kind === 'full' ? 'FULL CONFIG' : article.category}</span><h2 className="text-sm font-bold text-foreground group-hover:text-cyan-300">{article.title}</h2></div>
+            <p className="line-clamp-2 text-xs text-muted-foreground">{article.description}</p>
+            <div className="flex flex-wrap gap-1">{article.tags.slice(1, 5).map(item => <span key={item} className="text-[10px] text-cyan-400/80">#{item.replace(/\s+/g, '')}</span>)}</div>
+          </Link>
+          <button type="button" onClick={() => setLibraryFavs(toggleLibraryFavorite(article.id))} aria-label={libraryFavs.includes(article.id) ? `Bỏ yêu thích ${article.title}` : `Yêu thích ${article.title}`} className="rounded p-1 text-muted-foreground hover:text-yellow-400"><Star className={`h-4 w-4 ${libraryFavs.includes(article.id) ? 'fill-yellow-400 text-yellow-400' : ''}`} /></button>
+          <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+        </CardContent></Card>)}
+      </div>
+
       {/* Command List Grid */}
       <div className="space-y-4">
+        {!!filtered.length && <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Bộ lệnh của bạn</h2>}
         {filtered.map(cmd => {
           const allCommandsText = commandItemText(cmd);
           const matchingLines = matchingCommandLines(cmd, query);
@@ -275,7 +304,7 @@ export default function CommandsPage() {
         })}
       </div>
 
-      {filtered.length === 0 && (
+      {filtered.length + filteredLibrary.length === 0 && (
         <div className="text-center py-12 bg-card border border-border rounded-xl p-6 space-y-2">
           <Terminal className="w-8 h-8 text-muted-foreground mx-auto opacity-50" />
           <p className="text-sm font-bold text-foreground">
