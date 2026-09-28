@@ -52,7 +52,7 @@ export function FormattedArticleText({ text, onZoomImage }: { text: string; onZo
       if (part.kind === 'table') {
         const rows = part.content.split('\n').map(row => row.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim())).filter(row => !row.every(cell => /^:?-{3,}:?$/.test(cell)));
         const [head, ...body] = rows;
-        return <div key={key} className="article-table-wrap"><table><thead><tr>{head?.map((cell, cellIndex) => <th key={cellIndex}>{cell}</th>)}</tr></thead><tbody>{body.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, cellIndex) => <td key={cellIndex}>{cell}</td>)}</tr>)}</tbody></table></div>;
+        return <div key={key} className="article-table-wrap"><table><thead><tr>{head?.map((cell, cellIndex) => <th key={cellIndex} scope="col">{cell}</th>)}</tr></thead><tbody>{body.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, cellIndex) => <td key={cellIndex} data-label={head?.[cellIndex] || `Cột ${cellIndex + 1}`}>{cell}</td>)}</tr>)}</tbody></table></div>;
       }
       if (part.kind === 'rich') return <FormattedInlineText key={key} text={part.content} onZoomImage={onZoomImage} className="text-sm text-foreground/95 leading-relaxed" />;
       return <div key={key} className="article-paragraph"><FormattedInlineText text={part.content} onZoomImage={onZoomImage} className="text-sm text-foreground/95 leading-relaxed" /></div>;

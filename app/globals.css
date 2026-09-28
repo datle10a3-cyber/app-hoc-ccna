@@ -345,7 +345,23 @@ aside nav a { min-height: 44px; font-size: 14px !important; }
   .reading-hero { padding: 1.25rem 1.125rem; }
   .reading-article { padding: 1.125rem 1.125rem 3rem !important; font-size: 16px; }
   .reading-page .reading-title { font-size: 28px; }
-  .reading-article table { min-width: 600px; }
+  .reading-article .article-table-wrap,
+  .reading-article .doc-rich-table-wrap { overflow: visible; border: 0; border-radius: 0; }
+  .reading-article table,
+  .reading-article .doc-rich-content table { display: block; width: 100% !important; min-width: 0 !important; table-layout: auto; overflow: visible; border: 0; border-radius: 0; }
+  .reading-article table thead { display: none; }
+  .reading-article table tbody,
+  .reading-article table tfoot { display: block; width: 100%; }
+  .reading-article table tbody tr,
+  .reading-article table tfoot tr { display: block; width: 100%; margin: 0 0 .8rem; overflow: hidden; border: 1px solid rgb(148 163 184 / .16); border-radius: .7rem; background: rgb(15 23 42 / .48); }
+  .reading-article table td,
+  .reading-article table tbody th,
+  .reading-article table tfoot th { display: grid; grid-template-columns: minmax(76px, 32%) minmax(0, 1fr); gap: .7rem; width: 100%; min-width: 0; padding: .7rem .8rem !important; border: 0 !important; border-bottom: 1px solid rgb(148 163 184 / .1) !important; overflow-wrap: anywhere; word-break: normal; }
+  .reading-article table td::before,
+  .reading-article table tbody th::before,
+  .reading-article table tfoot th::before { content: attr(data-label); color: #67e8f9; font-size: .78em; font-weight: 700; line-height: 1.5; }
+  .reading-article table tr > :last-child { border-bottom: 0 !important; }
+  .reading-article table [colspan] { grid-column: 1 / -1; }
 }
 @media (max-width: 767px) {
   .app-main { padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important; }

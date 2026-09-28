@@ -83,6 +83,34 @@ export function FormattedInlineText({
     }
     const container = document.createElement('div');
     container.innerHTML = sanitizeRichHtml(richDocumentHtml(text));
+    container.querySelectorAll('table').forEach(table => {
+      const rows = Array.from(table.querySelectorAll<HTMLTableRowElement>('tr'));
+      let headerRow = table.querySelector('thead tr') as HTMLTableRowElement | null;
+      if (!headerRow) {
+        headerRow = rows.find(row => row.querySelector('th')) || null;
+        if (headerRow) {
+          const head = document.createElement('thead');
+          head.appendChild(headerRow);
+          table.insertBefore(head, table.firstChild);
+        }
+      }
+      const headers = headerRow ? Array.from(headerRow.cells).map(cell => cell.textContent?.trim() || '') : [];
+      table.querySelectorAll<HTMLTableRowElement>('tbody tr, tfoot tr').forEach(row => {
+        let columnIndex = 0;
+        Array.from(row.cells).forEach(cell => {
+          const label = headers[columnIndex] || `Cột ${columnIndex + 1}`;
+          cell.setAttribute('data-label', label);
+          columnIndex += Math.max(1, Number(cell.getAttribute('colspan')) || 1);
+        });
+      });
+      table.classList.add('reading-responsive-table');
+      if (!table.parentElement?.classList.contains('doc-rich-table-wrap')) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'doc-rich-table-wrap';
+        table.parentNode?.insertBefore(wrapper, table);
+        wrapper.appendChild(table);
+      }
+    });
     container.querySelectorAll('img[src^="img_"]').forEach(image => {
       const stored = repository.getImage(image.getAttribute('src') || '');
       if (stored && /^(data:image\/(?:png|jpeg|gif|webp);base64,|https?:\/\/)/i.test(stored)) image.setAttribute('src', stored);
