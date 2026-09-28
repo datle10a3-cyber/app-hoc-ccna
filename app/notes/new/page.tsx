@@ -15,6 +15,8 @@ function NoteForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
+  const draftKey = `ccna-note-draft:${editId || 'new'}`;
+  const [draftReady, setDraftReady] = useState(false);
   const [note, setNote] = useState<PersonalNote | null>(null);
   const [title, setTitle] = useState('');
   const [type, setType] = useState('Ghi chú thường');
@@ -24,16 +26,40 @@ function NoteForm() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!editId) return;
-    const existing = repository.getNoteById(editId);
-    if (!existing) return;
-    setNote(existing);
-    setTitle(existing.title);
-    setType(existing.type || 'Ghi chú thường');
-    setTags(existing.tags.join(', '));
-    setContent(existing.content);
-    setImageUrl(existing.imageUrl || '');
-  }, [editId]);
+    let restored = false;
+    try {
+      const rawDraft = sessionStorage.getItem(draftKey);
+      if (rawDraft) {
+        const draft = JSON.parse(rawDraft) as { title?: string; type?: string; tags?: string; content?: string; imageUrl?: string };
+        setTitle(draft.title || '');
+        setType(draft.type || 'Ghi chú thường');
+        setTags(draft.tags || '');
+        setContent(draft.content || '');
+        setImageUrl(draft.imageUrl || '');
+        restored = true;
+      }
+    } catch { /* Ignore an invalid or unavailable draft. */ }
+    if (editId) {
+      const existing = repository.getNoteById(editId);
+      if (existing) {
+        setNote(existing);
+        if (!restored) {
+          setTitle(existing.title);
+          setType(existing.type || 'Ghi chú thường');
+          setTags(existing.tags.join(', '));
+          setContent(existing.content);
+          setImageUrl(existing.imageUrl || '');
+        }
+      }
+    }
+    setDraftReady(true);
+  }, [draftKey, editId]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    try { sessionStorage.setItem(draftKey, JSON.stringify({ title, type, tags, content, imageUrl })); }
+    catch { /* Keep the current editing session usable when the draft exceeds storage limits. */ }
+  }, [draftReady, draftKey, title, type, tags, content, imageUrl]);
 
   const uploadImage = (file?: File) => {
     if (!file) return;
@@ -62,6 +88,7 @@ function NoteForm() {
     };
     try {
       repository.saveNote(saved);
+      try { sessionStorage.removeItem(draftKey); } catch { /* Saving the note must not depend on session storage. */ }
     } catch {
       toast('Chưa lưu được', 'Bộ nhớ trình duyệt đã đầy. Hãy giảm kích thước ảnh hoặc sao lưu dữ liệu rồi thử lại.', 'error');
       return;

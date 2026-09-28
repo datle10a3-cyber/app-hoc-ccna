@@ -80,7 +80,7 @@ export function Header({ onOpenSearch, onOpenMobileMenu }: HeaderProps) {
     setIsSyncing(false);
     if (res.success) {
       toast('Đồng bộ thành công!', res.message, 'success');
-      window.location.reload();
+      window.dispatchEvent(new Event('ccna:data-sync'));
     } else {
       toast('Thông báo đồng bộ', res.message, 'info');
     }

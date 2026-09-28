@@ -14,7 +14,10 @@ export default function LearnPage() {
   const [lessons, setLessons] = useState<Lesson[]>([]);
 
   useEffect(() => {
-    setLessons(repository.getLessons());
+    const refresh = () => setLessons(repository.getLessons());
+    refresh();
+    window.addEventListener('ccna:data-sync', refresh);
+    return () => window.removeEventListener('ccna:data-sync', refresh);
   }, []);
 
   const topicsList = Array.from(new Set(lessons.map(l => l.topic)));

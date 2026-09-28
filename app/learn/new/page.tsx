@@ -43,6 +43,7 @@ function NewLessonForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
+  const draftKey = `ccna-lesson-draft:${editId || 'new'}`;
 
   const [title, setTitle] = useState('');
   const [topic, setTopic] = useState('Network Access');
@@ -53,22 +54,46 @@ function NewLessonForm() {
     { id: 'b-1', type: 'paragraph', content: '' }
   ]);
   const [isEditing, setIsEditing] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
+    let restored = false;
+    try {
+      const rawDraft = sessionStorage.getItem(draftKey);
+      if (rawDraft) {
+        const draft = JSON.parse(rawDraft) as { title?: string; topic?: string; summary?: string; tags?: string; imageUrl?: string; blocks?: LessonBlock[] };
+        setTitle(draft.title || '');
+        setTopic(draft.topic || 'Network Access');
+        setSummary(draft.summary || '');
+        setTags(draft.tags || 'CCNA');
+        setImageUrl(draft.imageUrl || '');
+        if (Array.isArray(draft.blocks) && draft.blocks.length) setBlocks(draft.blocks);
+        restored = true;
+      }
+    } catch { /* Ignore an invalid or unavailable draft. */ }
     if (editId) {
       const existing = repository.getLessonById(editId);
       if (existing) {
         setIsEditing(true);
-        setTitle(existing.title);
-        setTopic(existing.topic);
-        setSummary(existing.summary);
-        setImageUrl(existing.imageUrl || '');
-        setTags(existing.tags.join(', '));
-        setBlocks(existing.blocks && existing.blocks.length > 0 ? existing.blocks : [{ id: 'b-1', type: 'paragraph', content: '' }]);
+        if (!restored) {
+          setTitle(existing.title);
+          setTopic(existing.topic);
+          setSummary(existing.summary);
+          setImageUrl(existing.imageUrl || '');
+          setTags(existing.tags.join(', '));
+          setBlocks(existing.blocks && existing.blocks.length > 0 ? existing.blocks : [{ id: 'b-1', type: 'paragraph', content: '' }]);
+        }
       }
     }
-  }, [editId]);
+    setDraftReady(true);
+  }, [draftKey, editId]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    try { sessionStorage.setItem(draftKey, JSON.stringify({ title, topic, summary, tags, imageUrl, blocks })); }
+    catch { /* Keep the current editing session usable when the draft exceeds storage limits. */ }
+  }, [draftReady, draftKey, title, topic, summary, tags, imageUrl, blocks]);
 
   const addBlock = (type: BlockType) => {
     setBlocks(prev => [...prev, { id: `b-${Date.now()}`, type, content: '' }]);
@@ -132,6 +157,7 @@ function NewLessonForm() {
       createdAt: editId ? (repository.getLessonById(editId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
       updatedAt: new Date().toISOString()
       });
+      try { sessionStorage.removeItem(draftKey); } catch { /* Saving the lesson must not depend on session storage. */ }
     } catch {
       toast('Chưa lưu được', 'Bộ nhớ trình duyệt đã đầy. Hãy giảm kích thước ảnh hoặc sao lưu dữ liệu rồi thử lại.', 'error');
       return;

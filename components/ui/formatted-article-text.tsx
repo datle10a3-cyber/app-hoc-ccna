@@ -41,7 +41,9 @@ export function FormattedArticleText({ text, onZoomImage }: { text: string; onZo
       if (part.kind === 'code' || part.kind === 'diagram') return <CopyableBlock key={key} content={part.content} diagram={part.kind === 'diagram'} />;
       if (part.kind === 'heading') return <h2 key={key} className="article-heading">{part.content}</h2>;
       if (part.kind === 'step') return <h3 key={key} className="article-step">{part.content}</h3>;
-      if (part.kind === 'list') return <ul key={key} className="article-list">{part.content.split('\n').map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul>;
+      if (part.kind === 'list') return <ul key={key} className="article-list">{part.content.split('\n').map((item, itemIndex) => item.startsWith('→ ')
+        ? <li key={itemIndex} className="article-arrow-item"><span aria-hidden="true">→</span>{item.slice(2)}</li>
+        : <li key={itemIndex}>{item}</li>)}</ul>;
       if (part.kind === 'table') {
         const rows = part.content.split('\n').map(row => row.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim())).filter(row => !row.every(cell => /^:?-{3,}:?$/.test(cell)));
         const [head, ...body] = rows;

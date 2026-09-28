@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import './globals.css';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { ToastProvider } from '@/components/ui/toast';
@@ -15,7 +16,49 @@ import { supabase } from '@/lib/db/supabase-client';
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dataRevision, setDataRevision] = useState(0);
+  const mainRef = useRef<HTMLElement>(null);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    const key = `ccna-scroll:${pathname}`;
+    let restoringScroll = false;
+    const savePosition = () => {
+      if (restoringScroll) return;
+      try { sessionStorage.setItem(key, String(main.scrollTop)); } catch { /* Storage can be unavailable in private contexts. */ }
+    };
+    main.addEventListener('scroll', savePosition, { passive: true });
+    let restoreTimer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+    let observer: MutationObserver | undefined;
+    try {
+      const savedPosition = Number(sessionStorage.getItem(key) || 0);
+      if (savedPosition > 0) {
+        restoringScroll = true;
+        const deadline = Date.now() + 1800;
+        const restorePosition = () => {
+          if (cancelled) return;
+          main.scrollTop = savedPosition;
+          if (main.scrollTop < savedPosition && Date.now() < deadline) {
+            restoreTimer = setTimeout(restorePosition, 60);
+          } else {
+            restoringScroll = false;
+            observer?.disconnect();
+          }
+        };
+        observer = new MutationObserver(restorePosition);
+        observer.observe(main, { childList: true, subtree: true });
+        restoreTimer = setTimeout(restorePosition, 0);
+      }
+    } catch { /* Storage can be unavailable in private contexts. */ }
+    return () => {
+      cancelled = true;
+      if (restoreTimer) clearTimeout(restoreTimer);
+      observer?.disconnect();
+      main.removeEventListener('scroll', savePosition);
+    };
+  }, [pathname]);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -29,8 +72,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       await repository.setActiveUser(userId);
       if (userId && repository.isCloudSyncEnabled()) {
         const result = await repository.syncFromCloud();
-        if (!disposed && result.success) setDataRevision(value => value + 1);
-      } else if (!disposed) setDataRevision(value => value + 1);
+        if (!disposed && result.success) window.dispatchEvent(new Event('ccna:data-sync'));
+      } else if (!disposed) window.dispatchEvent(new Event('ccna:data-sync'));
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -51,7 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           channel.on('postgres_changes', { event: '*', schema: 'public', table }, () => {
             if (syncTimer) clearTimeout(syncTimer);
             syncTimer = setTimeout(() => {
-              void repository.syncFromCloud().then(result => { if (!disposed && result.success) setDataRevision(value => value + 1); });
+              void repository.syncFromCloud().then(result => { if (!disposed && result.success) window.dispatchEvent(new Event('ccna:data-sync')); });
             }, 350);
           });
         }
@@ -68,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           void hydrateAccount(session?.user.id || null);
         }
       });
-      const handleFocus = () => { if (document.visibilityState === 'visible') void repository.syncFromCloud().then(result => { if (!disposed && result.success) setDataRevision(value => value + 1); }); };
+      const handleFocus = () => { if (document.visibilityState === 'visible') void repository.syncFromCloud().then(result => { if (!disposed && result.success) window.dispatchEvent(new Event('ccna:data-sync')); }); };
       window.addEventListener('focus', handleFocus);
       const cleanup = () => { disposed = true; listener.subscription.unsubscribe(); window.removeEventListener('focus', handleFocus); if (syncTimer) clearTimeout(syncTimer); if (syncChannel) void client.removeChannel(syncChannel); };
       const keydownCleanup = () => window.removeEventListener('keydown', handleKeyDown);
@@ -108,7 +151,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   onOpenSearch={() => setIsSearchOpen(true)} 
                   onOpenMobileMenu={() => setMobileMenuOpen(true)}
                 />
-                <main key={dataRevision} className="flex-1 overflow-y-auto p-3 sm:p-5 pb-16 md:pb-5">
+                <main ref={mainRef} className="flex-1 overflow-y-auto p-3 sm:p-5 pb-16 md:pb-5">
                   {children}
                 </main>
               </div>

@@ -6,7 +6,7 @@ export type ArticlePart = {
   level?: number;
 };
 
-const commandRoot = /^(?:enable|disable|configure|conf|end|exit|logout|reload|write|erase|copy|show|debug|undebug|clear|ping|traceroute|hostname|interface|vlan|name|description|switchport|spanning-tree|channel-group|channel-protocol|port-channel|router|network|neighbor|passive-interface|ip|ipv6|no|shutdown|standby|encapsulation|access-list|access-class|line|login|password|username|service|crypto|transport|banner|default-information|redistribute|ntp|logging|snmp-server|aaa|track|delay|frequency|duplex|speed|negotiation|mac-address|authentication|timers|key|string|clock|boot|cdp|lldp|errdisable|power|voice|storm-control|spanning|archive|file|license|monitor|terminal|ip-sla|ip sla|default-router|dns-server|domain-name|lease|pool|address|permit|deny|remark|sequence|seq|area|passive-interface|maximum-paths|maximum-prefix|default-metric|metric|offset-list|summary-address|aggregate-address|distribute-list|route-map|match|set|continue|call|exit-address-family|update-source|next-hop-self|local-preference|weight|remote-as|activate|send-community|soft-reconfiguration|version|authentication|ppp|pppoe|dialer|encapsulation|mtu|bandwidth|delay|load-interval|keepalive|auto|channel-group|lacp|pagp|storm-control|spanning-tree|dot1x|dot1q|switchport|vtp|snmp-server|errdisable|power|voice|!)(?:\s|$)/i;
+const commandRoot = /^(?:enable|disable|configure|conf|end|exit|logout|reload|write|erase|copy|show|debug|undebug|clear|ping|traceroute|hostname|interface|vlan|name|description|switchport|spanning-tree|channel-group|channel-protocol|port-channel|router|network|neighbor|passive-interface|ip|ipv6|no|shutdown|standby|encapsulation|access-list|access-class|line|login|password|username|service|crypto|transport|banner|default-information|redistribute|ntp|logging|snmp-server|aaa|track|delay|frequency|duplex|speed|negotiation|mac-address|authentication|timers|key|string|clock|boot|cdp|lldp|errdisable|power|voice|storm-control|spanning|archive|file|license|monitor|terminal|ip-sla|ip sla|default-router|dns-server|domain-name|lease|pool|address|permit|deny|remark|sequence|seq|area|maximum-paths|maximum-prefix|default-metric|metric|offset-list|summary-address|aggregate-address|distribute-list|route-map|match|set|continue|call|exit-address-family|update-source|next-hop-self|local-preference|weight|remote-as|activate|send-community|soft-reconfiguration|version|ppp|pppoe|pppoe-client|dialer|mtu|bandwidth|load-interval|keepalive|auto|lacp|pagp|dot1x|dot1q|vtp|!)(?:\s|$)/i;
 
 function isCommand(value: string): boolean {
   const line = value.trim().replace(/^[\w.-]+(?:\([^)]*\))?[#>]\s*/, '');
@@ -20,6 +20,7 @@ function isCommand(value: string): boolean {
   if (/^standby\s+\d+\s+(?:ip|priority|preempt|track|authentication|timers|name|use-bia|mac-address)\b/i.test(line)) return true;
   if (/^interface\s+[\w./:-]+(?:\s+[\w./:-]+)*$/i.test(line)) return true;
   if (/^(?:write|erase|reload|end|exit|logout|enable|disable|shutdown|login|aaa|no|!)(?:\s+.*)?$/i.test(line)) return true;
+  if (/^(?:pppoe-client|pppoe|ppp|dialer)(?:\s+.*)?$/i.test(line)) return true;
   if (/^(?:network|neighbor)\s+\S+\s+(?:area|remote-as|activate|update-source|next-hop-self|route-map|weight|password)\b/i.test(line)) return true;
   return commandRoot.test(line) && !/[.!?]$/.test(line);
 }
@@ -30,6 +31,7 @@ function headingInfo(value: string): { kind: 'heading' | 'step'; level: number; 
   const markdown = /^(#{1,4})\s+(.+)$/.exec(line);
   if (markdown) return { kind: /^(?:Bước|Step)\s+\d+/i.test(markdown[2]) ? 'step' : 'heading', level: markdown[1].length, content: markdown[2] };
   if (/^(?:Bước|Step)\s+\d+[.):-]?\s+\S/i.test(line)) return { kind: 'step', level: 3, content: line };
+  if (/^(?:SW|R|PC|ISP)\d+$/i.test(line) || /^(?:R\d+\s+(?:chết|down)|kết quả cuối cùng)\s*:?$/i.test(line)) return { kind: 'step', level: 3, content: line };
   if (/^(?:PHẦN|PHAN|PART)\s+[A-Z0-9]+\b/i.test(line)) return { kind: 'heading', level: 2, content: line };
   if (/^(?:[IVXLCDM]+[.)]|\d{1,2}[.)])\s+\S/i.test(line)) return { kind: 'heading', level: 2, content: line };
   if (/^(?:MÔ HÌNH|THÔNG SỐ|CẤU HÌNH|KIỂM TRA|LỖI THƯỜNG GẶP|YÊU CẦU|BẢNG IP|GIẢI THÍCH)\b.{0,80}:?$/i.test(line)) return { kind: 'heading', level: 2, content: line };
@@ -127,9 +129,12 @@ export function parseArticleText(source: string): ArticlePart[] {
       continue;
     }
 
-    if (/^\s*[-•*]\s+/.test(lines[index])) {
+    if (/^\s*(?:[-•*]|[→➜⇒])\s+/.test(lines[index])) {
       const collected: string[] = [];
-      while (index < lines.length && /^\s*[-•*]\s+/.test(lines[index])) collected.push(lines[index++].replace(/^\s*[-•*]\s+/, ''));
+      while (index < lines.length && /^\s*(?:[-•*]|[→➜⇒])\s+/.test(lines[index])) {
+        const arrow = /^\s*[→➜⇒]/.test(lines[index]);
+        collected.push(lines[index++].replace(/^\s*(?:[-•*]|[→➜⇒])\s+/, arrow ? '→ ' : ''));
+      }
       result.push({ kind: 'list', content: collected.join('\n') });
       continue;
     }
@@ -137,7 +142,7 @@ export function parseArticleText(source: string): ArticlePart[] {
     const collected: string[] = [];
     while (index < lines.length) {
       const current = lines[index].trim();
-      if (!current || headingInfo(current) || isCommand(current) || diagrams.has(index) || /^```/.test(current) || /^\|.*\|$/.test(current) || /^\s*[-•*]\s+/.test(lines[index])) break;
+      if (!current || headingInfo(current) || isCommand(current) || diagrams.has(index) || /^```/.test(current) || /^\|.*\|$/.test(current) || /^\s*(?:[-•*]|[→➜⇒])\s+/.test(lines[index])) break;
       collected.push(current);
       index++;
     }

@@ -15,6 +15,8 @@ function TopologyForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
+  const draftKey = `ccna-topology-draft:${editId || 'new'}`;
+  const [draftReady, setDraftReady] = useState(false);
   const [topology, setTopology] = useState<Topology | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -24,16 +26,40 @@ function TopologyForm() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!editId) return;
-    const existing = repository.getTopologyById(editId);
-    if (!existing) return;
-    setTopology(existing);
-    setTitle(existing.title);
-    setDescription(existing.description);
-    setDevices(existing.devices.join(', '));
-    setNotes(existing.notes || '');
-    setImageUrl(existing.imageUrl || '');
-  }, [editId]);
+    let restored = false;
+    try {
+      const rawDraft = sessionStorage.getItem(draftKey);
+      if (rawDraft) {
+        const draft = JSON.parse(rawDraft) as { title?: string; description?: string; devices?: string; notes?: string; imageUrl?: string };
+        setTitle(draft.title || '');
+        setDescription(draft.description || '');
+        setDevices(draft.devices || 'Router, Switch');
+        setNotes(draft.notes || '');
+        setImageUrl(draft.imageUrl || '');
+        restored = true;
+      }
+    } catch { /* Ignore an invalid or unavailable draft. */ }
+    if (editId) {
+      const existing = repository.getTopologyById(editId);
+      if (existing) {
+        setTopology(existing);
+        if (!restored) {
+          setTitle(existing.title);
+          setDescription(existing.description);
+          setDevices(existing.devices.join(', '));
+          setNotes(existing.notes || '');
+          setImageUrl(existing.imageUrl || '');
+        }
+      }
+    }
+    setDraftReady(true);
+  }, [draftKey, editId]);
+
+  useEffect(() => {
+    if (!draftReady) return;
+    try { sessionStorage.setItem(draftKey, JSON.stringify({ title, description, devices, notes, imageUrl })); }
+    catch { /* Keep the current editing session usable when the draft exceeds storage limits. */ }
+  }, [draftReady, draftKey, title, description, devices, notes, imageUrl]);
 
   const uploadImage = (file?: File) => {
     if (!file) return;
@@ -62,6 +88,7 @@ function TopologyForm() {
     };
     try {
       repository.saveTopology(saved);
+      try { sessionStorage.removeItem(draftKey); } catch { /* Saving the topology must not depend on session storage. */ }
     } catch {
       toast('Chưa lưu được', 'Bộ nhớ trình duyệt đã đầy. Hãy giảm kích thước ảnh hoặc sao lưu dữ liệu rồi thử lại.', 'error');
       return;

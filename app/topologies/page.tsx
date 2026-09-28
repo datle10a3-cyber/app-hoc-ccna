@@ -12,7 +12,12 @@ export default function TopologiesPage() {
   const [query, setQuery] = useState('');
   const [topologies, setTopologies] = useState<Topology[]>([]);
 
-  useEffect(() => setTopologies(repository.getTopologies()), []);
+  useEffect(() => {
+    const refresh = () => setTopologies(repository.getTopologies());
+    refresh();
+    window.addEventListener('ccna:data-sync', refresh);
+    return () => window.removeEventListener('ccna:data-sync', refresh);
+  }, []);
 
   const filtered = topologies.filter(topology =>
     `${topology.title} ${topology.description} ${topology.devices.join(' ')}`.toLowerCase().includes(query.toLowerCase())

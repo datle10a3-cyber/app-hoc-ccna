@@ -246,6 +246,9 @@ body {
 .article-list { list-style: disc; padding-left: 1.5rem; }
 .article-list li { margin: .2rem 0; }
 .article-list li::marker { color: #38bdf8; }
+.article-list .article-arrow-item { display: flex; align-items: baseline; gap: .55rem; margin-left: -.1rem; list-style: none; }
+.article-arrow-item > span { color: #38bdf8; font-weight: 800; }
+.article-flow > .article-list { padding: .65rem 1rem; border-left: 2px solid rgb(56 189 248 / .22); border-radius: .35rem; background: rgb(15 23 42 / .35); }
 .article-code { min-width: 0; overflow: hidden; border: 1px solid rgb(148 163 184 / .18); border-radius: .85rem; background: #080d16; }
 .article-code-bar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; padding: .55rem .8rem; border-bottom: 1px solid rgb(148 163 184 / .13); background: rgb(30 41 59 / .65); color: #7dd3fc; font: 600 .76rem ui-monospace, SFMono-Regular, Consolas, monospace; }
 .article-code-copy { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .45rem; border-radius: .4rem; color: #cbd5e1; cursor: pointer; }

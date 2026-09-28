@@ -22,6 +22,12 @@ export default function NotesPage() {
     if (linkedNoteId) router.replace(`/notes/${encodeURIComponent(linkedNoteId)}`);
   }, [router]);
 
+  useEffect(() => {
+    const refresh = () => setNotes(repository.getNotes());
+    window.addEventListener('ccna:data-sync', refresh);
+    return () => window.removeEventListener('ccna:data-sync', refresh);
+  }, []);
+
   const noteTypes = Array.from(new Set(notes.map(note => note.type).filter(Boolean)));
   const filtered = notes.filter(note => {
     const content = `${note.title} ${note.content} ${note.tags.join(' ')}`.toLowerCase();
