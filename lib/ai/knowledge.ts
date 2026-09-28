@@ -94,7 +94,7 @@ export function buildKnowledgeIndex(): KnowledgeSource[] {
       group,
       kind: 'note',
       title: note.title,
-      href: `/notes?note=${encodeURIComponent(note.id)}`
+      href: `/notes/${encodeURIComponent(note.id)}`
     }, [`Loại ghi chú: ${note.type}. Thẻ: ${(note.tags || []).join(', ')}`, clean(note.content)].join('\n\n'));
   }
 
