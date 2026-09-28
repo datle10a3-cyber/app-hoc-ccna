@@ -347,6 +347,19 @@ aside nav a { min-height: 44px; font-size: 14px !important; }
   .reading-page .reading-title { font-size: 28px; }
   .reading-article table { min-width: 600px; }
 }
+@media (max-width: 767px) {
+  .app-main { padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important; }
+  .app-bottom-nav { height: calc(3.5rem + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
 .doc-inline-image {
   display: block;
   width: fit-content;

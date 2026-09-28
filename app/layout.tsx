@@ -151,7 +151,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   onOpenSearch={() => setIsSearchOpen(true)} 
                   onOpenMobileMenu={() => setMobileMenuOpen(true)}
                 />
-                <main ref={mainRef} className="flex-1 overflow-y-auto p-3 sm:p-5 pb-16 md:pb-5">
+                <main ref={mainRef} className="app-main flex-1 overflow-y-auto p-3 sm:p-5 pb-16 md:pb-5">
                   {children}
                 </main>
               </div>
