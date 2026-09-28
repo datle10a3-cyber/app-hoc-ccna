@@ -9,7 +9,7 @@ import { Topology } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/modal';
+import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { useToast } from '@/components/ui/toast';
 import { FormattedInlineText } from '@/components/ui/formatted-inline-text';
 import { FormattedArticleText } from '@/components/ui/formatted-article-text';
@@ -83,7 +83,7 @@ export default function TopologyDetailPage() {
         {!topology.nodes?.length && !topology.links?.length && !topology.ipList?.length && !topology.notes && <p className="text-xs text-muted-foreground text-center py-8">Mô hình chưa có thông tin chi tiết.</p>}
       </CardContent></Card>
 
-      {lightboxImage && <Modal isOpen={Boolean(lightboxImage)} onClose={() => setLightboxImage(null)} title={`Sơ đồ: ${topology.title}`}><div className="space-y-3"><div className="p-2 bg-[#14120e] rounded-xl border border-border flex items-center justify-center min-h-[250px]"><img src={lightboxImage} alt={topology.title} className="max-w-full max-h-[75vh] object-contain rounded-lg" /></div><div className="flex justify-end"><Button size="sm" variant="outline" onClick={() => setLightboxImage(null)}>Đóng</Button></div></div></Modal>}
+      <ImageLightbox src={lightboxImage} alt={topology.title} onClose={() => setLightboxImage(null)} />
     </div>
   );
 }

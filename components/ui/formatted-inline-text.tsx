@@ -87,6 +87,11 @@ export function FormattedInlineText({
       const stored = repository.getImage(image.getAttribute('src') || '');
       if (stored && /^(data:image\/(?:png|jpeg|gif|webp);base64,|https?:\/\/)/i.test(stored)) image.setAttribute('src', stored);
     });
+    container.querySelectorAll('img').forEach(image => {
+      image.setAttribute('tabindex', '0');
+      image.setAttribute('role', 'button');
+      image.setAttribute('aria-label', `Xem ảnh ${image.getAttribute('alt') || 'phóng to'}`);
+    });
     setSafeRichHtml(container.innerHTML);
   }, [text]);
 
@@ -95,6 +100,13 @@ export function FormattedInlineText({
       onClick={event => {
         const image = event.target as HTMLElement;
         if (image.tagName === 'IMG') onZoomImage?.(image.getAttribute('src') || '');
+      }}
+      onKeyDown={event => {
+        const image = event.target as HTMLElement;
+        if (image.tagName === 'IMG' && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          onZoomImage?.(image.getAttribute('src') || '');
+        }
       }} />;
   }
 
@@ -109,7 +121,7 @@ export function FormattedInlineText({
       {chunks.map((chunk, idx) => {
         if (chunk.type === 'image') {
           return (
-            <figure key={idx} className="doc-display-image my-2 w-fit max-w-full">
+            <figure key={idx} className="doc-display-image my-2 mx-auto w-fit max-w-full">
               <button type="button" disabled={!onZoomImage} onClick={() => onZoomImage?.(chunk.url)}
                 className={`block max-w-full text-left ${onZoomImage ? 'cursor-zoom-in rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500' : ''}`}
                 aria-label={`Xem lớn ảnh ${chunk.alt}`}>

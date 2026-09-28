@@ -10,7 +10,7 @@ import { CiscoCommand } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/ui/modal';
+import { ImageLightbox } from '@/components/ui/image-lightbox';
 import { useToast } from '@/components/ui/toast';
 
 export default function CommandDetailPage() {
@@ -178,18 +178,7 @@ export default function CommandDetailPage() {
       </Card>
 
       {/* Lightbox Modal */}
-      {isLightboxOpen && cmd.imageUrl && (
-        <Modal isOpen={isLightboxOpen} onClose={() => setIsLightboxOpen(false)} title={`Sơ đồ: ${cmd.title}`}>
-          <div className="space-y-3">
-            <div className="p-2 bg-slate-950 rounded-lg border border-border flex items-center justify-center min-h-[250px]">
-              <img src={cmd.imageUrl} alt={cmd.title} className="max-w-full max-h-[70vh] object-contain rounded" />
-            </div>
-            <div className="flex justify-end">
-              <Button size="sm" variant="outline" onClick={() => setIsLightboxOpen(false)}>Đóng</Button>
-            </div>
-          </div>
-        </Modal>
-      )}
+      <ImageLightbox src={isLightboxOpen ? cmd.imageUrl || null : null} alt={cmd.title} onClose={() => setIsLightboxOpen(false)} />
     </div>
   );
 }

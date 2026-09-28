@@ -4,8 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Trash2, Upload } from 'lucide-react';
 import { readImageFile } from '@/lib/utils';
 import { repository } from '@/lib/db/repository';
-import { Modal } from './modal';
-import { Button } from './button';
+import { ImageLightbox } from './image-lightbox';
 import { isRichDocument, richDocumentHtml, RICH_DOCUMENT_PREFIX, sanitizeRichHtml } from '@/lib/rich-document';
 
 export interface VisualDocItem {
@@ -402,9 +401,7 @@ export function VisualDocEditor({ initialText, onChange, onDocItemsChange, compa
         className={'doc-rich-editor w-full outline-none ' + (compact ? 'min-h-[130px] p-3' : 'min-h-[280px] p-4 sm:p-5')}
       />
       {error && <p role="alert" className="border-t border-border px-3 py-2 text-xs text-destructive">{error}</p>}
-      {zoomUrl && <Modal isOpen onClose={() => setZoomUrl(null)} title="Xem ảnh">
-        <div className="space-y-3"><img src={zoomUrl} alt="Ảnh minh họa" className="mx-auto max-h-[75vh] max-w-full rounded-lg object-contain" /><div className="text-right"><Button type="button" size="sm" variant="outline" onClick={() => setZoomUrl(null)}>Đóng</Button></div></div>
-      </Modal>}
+      <ImageLightbox src={zoomUrl} alt="Ảnh minh họa" onClose={() => setZoomUrl(null)} />
     </div>
   );
 }
