@@ -7,6 +7,7 @@ import { ArrowLeft, Search, Moon, Sun, Menu, Database, RefreshCw, CheckCircle2 }
 import { Button } from '@/components/ui/button';
 import { repository } from '@/lib/db/repository';
 import { useToast } from '@/components/ui/toast';
+import { InstallAppButton } from '@/components/pwa/install-app-button';
 
 interface HeaderProps {
   onOpenSearch: () => void;
@@ -83,7 +84,7 @@ export function Header({ onOpenSearch, onOpenMobileMenu }: HeaderProps) {
   };
 
   return (
-    <header className="h-12 border-b border-border bg-card/90 backdrop-blur-md px-3 md:px-4 flex items-center justify-between z-20 shrink-0">
+    <header className="app-header h-12 border-b border-border bg-card/90 backdrop-blur-md px-3 md:px-4 flex items-center justify-between z-20 shrink-0">
       <div className="flex min-w-0 items-center gap-2">
         {/* Mobile Menu */}
         <button
@@ -106,6 +107,7 @@ export function Header({ onOpenSearch, onOpenMobileMenu }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-2">
+        <InstallAppButton />
         {/* Sync Status Badge */}
         {isSqlConfigured ? (
           <button

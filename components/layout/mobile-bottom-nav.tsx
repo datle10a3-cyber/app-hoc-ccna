@@ -19,7 +19,7 @@ export function MobileBottomNav() {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 h-14 bg-card/95 backdrop-blur-md border-t border-border z-30 flex items-center justify-around px-2">
+    <div className="app-bottom-nav md:hidden fixed bottom-0 left-0 right-0 h-14 bg-card/95 backdrop-blur-md border-t border-border z-30 flex items-center justify-around px-2">
       {navItems.map(item => {
         const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
         const Icon = item.icon;

@@ -6,66 +6,104 @@
 
 @layer base {
   :root {
-    --background: 42 35% 98%;
-    --foreground: 24 35% 12%;
+    --background: 216 45% 97%;
+    --foreground: 218 38% 13%;
 
-    --card: 40 30% 99%;
-    --card-foreground: 24 35% 12%;
+    --card: 213 48% 99%;
+    --card-foreground: 218 38% 13%;
 
-    --popover: 40 30% 99%;
-    --popover-foreground: 24 35% 12%;
+    --popover: 213 48% 99%;
+    --popover-foreground: 218 38% 13%;
 
-    --primary: 38 92% 48%;
-    --primary-foreground: 40 35% 99%;
+    --primary: 195 100% 42%;
+    --primary-foreground: 220 45% 8%;
 
-    --secondary: 40 20% 93%;
-    --secondary-foreground: 24 35% 12%;
+    --secondary: 210 35% 92%;
+    --secondary-foreground: 218 38% 13%;
 
-    --muted: 40 20% 93%;
-    --muted-foreground: 24 15% 42%;
+    --muted: 210 32% 93%;
+    --muted-foreground: 216 18% 38%;
 
-    --accent: 38 90% 93%;
-    --accent-foreground: 38 90% 28%;
+    --accent: 192 80% 91%;
+    --accent-foreground: 199 100% 26%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 20% 86%;
-    --input: 40 20% 86%;
-    --ring: 38 92% 48%;
+    --border: 210 25% 84%;
+    --input: 210 25% 84%;
+    --ring: 192 100% 40%;
 
     --radius: 0.625rem;
   }
 
   .dark {
-    --background: 36 22% 7%;
-    --foreground: 40 25% 96%;
+    --background: 218 46% 7%;
+    --foreground: 210 35% 96%;
 
-    --card: 36 20% 10%;
-    --card-foreground: 40 25% 96%;
+    --card: 218 40% 10%;
+    --card-foreground: 210 35% 96%;
 
-    --popover: 36 20% 10%;
-    --popover-foreground: 40 25% 96%;
+    --popover: 218 40% 10%;
+    --popover-foreground: 210 35% 96%;
 
-    --primary: 38 92% 50%;
-    --primary-foreground: 36 22% 7%;
+    --primary: 191 100% 48%;
+    --primary-foreground: 218 46% 7%;
 
-    --secondary: 36 18% 15%;
-    --secondary-foreground: 40 25% 96%;
+    --secondary: 215 33% 15%;
+    --secondary-foreground: 210 35% 96%;
 
-    --muted: 36 18% 15%;
-    --muted-foreground: 40 12% 65%;
+    --muted: 215 33% 15%;
+    --muted-foreground: 215 17% 72%;
 
-    --accent: 36 22% 18%;
-    --accent-foreground: 38 92% 60%;
+    --accent: 198 50% 18%;
+    --accent-foreground: 190 100% 64%;
 
     --destructive: 0 63% 40%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 36 18% 18%;
-    --input: 36 18% 18%;
-    --ring: 38 92% 50%;
+    --border: 214 29% 21%;
+    --input: 214 29% 21%;
+    --ring: 191 100% 48%;
   }
+}
+
+/* Cisco-inspired glass surfaces over the supplied network artwork. */
+html { background: hsl(var(--background)); }
+body {
+  background-color: hsl(var(--background));
+  background-image: linear-gradient(180deg, hsl(218 50% 6% / 0.88), hsl(218 50% 6% / 0.94)), url('/images/ccna-network-wallpaper.webp');
+  background-position: center, center 42%;
+  background-size: cover, cover;
+  background-attachment: fixed, fixed;
+}
+.dark body { background-color: #07101e; }
+.dark .bg-card { background-color: hsl(218 40% 10% / 0.92); }
+.dark .bg-card\/90 { background-color: hsl(218 40% 10% / 0.9); }
+.dark .bg-card\/95 { background-color: hsl(218 40% 10% / 0.95); }
+.dark .bg-background { background-color: hsl(218 46% 7% / 0.94); }
+.dark .bg-muted\/20 { background-color: hsl(215 33% 15% / 0.58); }
+.dark .bg-muted\/40 { background-color: hsl(215 33% 15% / 0.72); }
+
+/* Move the interface accent from warm amber to the cyan Cisco palette. */
+.text-amber-400, .text-amber-500, .text-amber-600 { color: #087e9e !important; }
+.dark .text-amber-400, .dark .text-amber-500, .dark .text-amber-600 { color: #38d5ff !important; }
+.bg-amber-500 { background-color: #13bce8 !important; }
+.hover\:bg-amber-600:hover { background-color: #079ac8 !important; }
+.bg-amber-500\/5 { background-color: rgb(16 189 232 / 0.07) !important; }
+.bg-amber-500\/10 { background-color: rgb(16 189 232 / 0.1) !important; }
+.bg-amber-500\/15 { background-color: rgb(16 189 232 / 0.14) !important; }
+.bg-amber-500\/20 { background-color: rgb(16 189 232 / 0.18) !important; }
+.border-amber-500\/20, .border-amber-500\/30, .border-amber-500\/40 { border-color: rgb(56 213 255 / 0.28) !important; }
+.hover\:border-amber-500\/40:hover, .hover\:border-amber-500\/50:hover { border-color: rgb(56 213 255 / 0.58) !important; }
+.text-slate-950 { color: #03131d !important; }
+.app-header {
+  padding-top: env(safe-area-inset-top);
+  height: calc(3rem + env(safe-area-inset-top));
+}
+.app-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(3.5rem + env(safe-area-inset-bottom));
 }
 
 @layer base {

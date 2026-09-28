@@ -16,6 +16,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(error => {
+        console.error('Unable to register app service worker:', error);
+      });
+    }
+
     // Initial sync check with Supabase if configured
     if (repository.isCloudSyncEnabled()) {
       repository.syncFromCloud();
@@ -36,18 +42,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <title>CCNA Notes - Sổ Tay Học Mạng</title>
         <meta name="description" content="Ứng dụng ghi chép cá nhân cho CCNA - Lưu bài học, lệnh Cisco, mô hình mạng." />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#07101e" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="CCNA Notes" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </head>
-      <body className="antialiased min-h-screen bg-background text-foreground flex overflow-hidden">
+      <body className="antialiased min-h-[100dvh] bg-background text-foreground flex overflow-hidden">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <ToastProvider>
           <AssistantProvider>
-            <div className="flex w-full h-screen overflow-hidden">
+            <div className="flex w-full h-[100dvh] min-h-[100svh] overflow-hidden">
               <Sidebar 
                 mobileOpen={mobileMenuOpen} 
                 onMobileClose={() => setMobileMenuOpen(false)} 
               />
-              <div className="flex-1 flex flex-col h-screen overflow-hidden">
+              <div className="flex-1 flex flex-col h-[100dvh] min-h-[100svh] overflow-hidden">
                 <Header 
                   onOpenSearch={() => setIsSearchOpen(true)} 
                   onOpenMobileMenu={() => setMobileMenuOpen(true)}
