@@ -31,19 +31,40 @@ export default function SettingsPage() {
     event.preventDefault();
     if (!supabase) return;
     setAuthBusy(true);
-    const result = authMode === 'login'
-      ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
-      : await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${window.location.origin}/settings` } });
-    setAuthBusy(false);
-    if (result.error) { toast('Không thể đăng nhập', result.error.message, 'warning'); return; }
-    if (authMode === 'register' && !result.data.session) {
-      toast('Kiểm tra email', 'Mở email xác nhận tài khoản rồi đăng nhập để bật đồng bộ.', 'info');
-      setAuthMode('login');
-      return;
+    try {
+      const mode = authMode;
+      const result = mode === 'login'
+        ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
+        : await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: `${window.location.origin}/settings` } });
+      if (result.error) {
+        const message = result.error.message;
+        const normalized = `${message} ${'code' in result.error ? result.error.code : ''}`.toLowerCase();
+        if (normalized.includes('security purposes') || normalized.includes('rate limit') || normalized.includes('too many requests')) {
+          toast(mode === 'register' ? 'Đang bị giới hạn gửi email' : 'Thử lại sau', mode === 'register'
+            ? 'Supabase đang tạm chặn yêu cầu gửi email xác nhận. Chờ ít nhất 60 giây, kiểm tra Hộp thư đến/Spam rồi đăng nhập; đừng bấm tạo tài khoản liên tục.'
+            : 'Có quá nhiều yêu cầu đăng nhập trong thời gian ngắn. Vui lòng chờ một lúc rồi thử lại.', 'warning');
+        } else if (normalized.includes('already registered') || normalized.includes('user already exists')) {
+          toast('Email đã có tài khoản', 'Hãy kiểm tra email xác nhận trong Hộp thư đến/Spam rồi đăng nhập. Nếu chưa nhận được thư, email gửi có thể đang bị giới hạn của Supabase.', 'warning');
+        } else if (normalized.includes('email_address_not_authorized')) {
+          toast('Supabase chưa gửi được email', 'SMTP mặc định của Supabase chỉ gửi tới thành viên trong team. Muốn mọi người tự đăng ký, project cần được cấu hình SMTP riêng.', 'warning');
+        } else {
+          toast(mode === 'login' ? 'Không thể đăng nhập' : 'Không thể tạo tài khoản', message, 'warning');
+        }
+        return;
+      }
+      if (mode === 'register' && !result.data.session) {
+        toast('Tài khoản đã tạo — xác nhận email', 'Mở email xác nhận trong Hộp thư đến/Spam rồi đăng nhập để bật đồng bộ.', 'info');
+        setAuthMode('login');
+        return;
+      }
+      setAccount(result.data.user?.email || email.trim());
+      toast('Đã kết nối tài khoản', 'Đang gộp dữ liệu trên thiết bị này và đồng bộ lên cloud…', 'success');
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (error) {
+      toast(authMode === 'login' ? 'Không thể đăng nhập' : 'Không thể tạo tài khoản', error instanceof Error ? error.message : 'Có lỗi kết nối. Vui lòng thử lại.', 'warning');
+    } finally {
+      setAuthBusy(false);
     }
-    setAccount(result.data.user?.email || email.trim());
-    toast('Đã kết nối tài khoản', 'Đang gộp dữ liệu trên thiết bị này và đồng bộ lên cloud…', 'success');
-    setTimeout(() => window.location.reload(), 1200);
   };
 
   const handleSignOut = async () => {
