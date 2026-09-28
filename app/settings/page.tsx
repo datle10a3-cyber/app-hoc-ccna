@@ -14,6 +14,7 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isCloudEnabled = repository.isCloudSyncEnabled();
   const [aiStatus, setAiStatus] = useState<{ configured: boolean; provider: string | null; model: string; geminiFallbackConfigured?: boolean } | null>(null);
+  const [pastedBackup, setPastedBackup] = useState('');
 
   useEffect(() => {
     fetch('/api/ai/chat').then(response => response.json()).then(setAiStatus).catch(() => setAiStatus(null));
@@ -53,6 +54,17 @@ export default function SettingsPage() {
     };
     reader.readAsText(file);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handlePasteImport = () => {
+    if (!pastedBackup.trim()) return;
+    const res = repository.importData(pastedBackup);
+    if (res.success) {
+      toast('Đã nhập dữ liệu', res.message, 'success');
+      setTimeout(() => window.location.reload(), 800);
+    } else {
+      toast('Không thể nhập', res.message, 'warning');
+    }
   };
 
   const handleClearData = () => {
@@ -104,6 +116,21 @@ export default function SettingsPage() {
               className="hidden" 
             />
           </div>
+          <details className="rounded-lg border border-border p-3">
+            <summary className="cursor-pointer text-xs font-semibold">Dán JSON sao lưu từ thiết bị khác</summary>
+            <p className="mt-2 text-[11px] text-muted-foreground">Chỉ các nhóm có trong JSON mới được nhập. Có thể dán riêng nhóm lệnh Cisco để không thay bài học, mô hình và ghi chú.</p>
+            <textarea
+              value={pastedBackup}
+              onChange={event => setPastedBackup(event.target.value)}
+              rows={5}
+              placeholder="Dán nội dung file sao lưu JSON vào đây..."
+              className="mt-2 w-full resize-y rounded-md border border-input bg-background p-2 font-mono text-[11px] outline-none focus:ring-1 focus:ring-ring"
+              aria-label="Nội dung JSON sao lưu"
+            />
+            <div className="mt-2 flex justify-end">
+              <Button size="sm" onClick={handlePasteImport} disabled={!pastedBackup.trim()} className="text-xs">Nhập JSON đã dán</Button>
+            </div>
+          </details>
         </CardContent>
       </Card>
 
