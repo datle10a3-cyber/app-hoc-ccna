@@ -48,7 +48,7 @@ export default function NoteDetailPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="reading-page space-y-6 px-3 sm:px-5">
       <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-3">
         <Link href="/notes"><Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4" /> Tất cả ghi chú</Button></Link>
         <div className="flex items-center gap-1.5">
@@ -59,18 +59,18 @@ export default function NoteDetailPage() {
         </div>
       </div>
 
-      <div className="p-5 sm:p-6 bg-gradient-to-br from-card via-card to-amber-950/20 border border-amber-500/30 rounded-2xl space-y-3 shadow-sm">
+      <div className="reading-hero space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-[11px] font-extrabold">{note.type || 'Ghi chú'}</Badge>
           <span className="text-[11px] text-muted-foreground">{readTime} phút đọc</span>
           {note.imageUrl && <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full"><ImageIcon className="w-3 h-3" /> Có ảnh đính kèm</span>}
         </div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground tracking-tight leading-tight">{note.title}</h1>
+        <h1 className="reading-title">{note.title}</h1>
         {note.imageUrl && <button type="button" onClick={() => setLightboxImage(note.imageUrl!)} className="mt-3 relative w-full rounded-xl overflow-hidden border border-amber-500/30 bg-[#14120e] cursor-pointer group hover:border-amber-500 p-1"><img src={note.imageUrl} alt={note.title} className="w-full max-h-72 object-contain rounded-lg" /><span className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 text-white text-xs font-bold"><Eye className="w-4 h-4 text-amber-400" /> Xem ảnh phóng to</span></button>}
         {note.tags.length > 0 && <div className="flex items-center gap-1.5 flex-wrap pt-1">{note.tags.map(tag => <span key={tag} className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full"><Tag className="w-2.5 h-2.5" /> {tag}</span>)}</div>}
       </div>
 
-      <Card className="border-border/80 shadow-sm"><CardContent className="p-5 sm:p-8 space-y-4"><FormattedArticleText text={note.content} onZoomImage={setLightboxImage} />{!note.content && <p className="text-xs text-muted-foreground text-center py-8">Ghi chú chưa có nội dung.</p>}</CardContent></Card>
+      <Card className="reading-surface"><CardContent className="reading-article"><FormattedArticleText text={note.content} onZoomImage={setLightboxImage} />{!note.content && <p className="text-xs text-muted-foreground text-center py-8">Ghi chú chưa có nội dung.</p>}</CardContent></Card>
 
       {lightboxImage && <Modal isOpen={Boolean(lightboxImage)} onClose={() => setLightboxImage(null)} title="Ảnh ghi chú phóng to"><div className="space-y-3"><div className="p-2 bg-[#14120e] rounded-xl border border-border flex items-center justify-center min-h-[250px]"><img src={lightboxImage} alt={note.title} className="max-w-full max-h-[75vh] object-contain rounded-lg" /></div><div className="flex justify-end"><Button size="sm" variant="outline" onClick={() => setLightboxImage(null)}>Đóng</Button></div></div></Modal>}
     </div>

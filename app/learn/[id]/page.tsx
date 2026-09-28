@@ -54,8 +54,8 @@ function BlockRenderer({ block, index, onZoomImage }: { block: LessonBlock; inde
               <Terminal className="w-3.5 h-3.5 text-amber-500" /> {block.title}
             </h4>
           )}
-          <div className="relative group rounded-xl overflow-hidden border border-amber-500/30 bg-[#14120e] shadow-md">
-            <div className="flex items-center justify-between px-3.5 py-1.5 bg-[#1c1914] border-b border-amber-500/20 text-[11px] text-amber-400 font-mono">
+          <div className="reading-code relative group rounded-xl overflow-hidden border border-slate-400/10 bg-[#080d16] shadow-none">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900/50 border-b border-slate-400/10 text-xs text-slate-300 font-mono">
               <span className="flex items-center gap-1.5 font-bold">
                 <Terminal className="w-3 h-3 text-amber-500" /> Cisco IOS CLI
               </span>
@@ -77,7 +77,7 @@ function BlockRenderer({ block, index, onZoomImage }: { block: LessonBlock; inde
                 )}
               </button>
             </div>
-            <div className="p-4 text-xs sm:text-sm font-mono text-amber-200 overflow-x-auto leading-relaxed whitespace-pre-wrap">
+            <div className="reading-code-content p-4 sm:px-5 text-sm font-mono text-slate-200 overflow-x-auto leading-[1.7] whitespace-pre-wrap">
               <FormattedInlineText text={block.content} onZoomImage={onZoomImage} className="font-mono text-amber-200" />
             </div>
           </div>
@@ -216,7 +216,7 @@ export default function LessonDetailPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="reading-page space-y-6 px-3 sm:px-5">
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-3">
         <Link href="/learn">
@@ -271,7 +271,7 @@ export default function LessonDetailPage() {
       </div>
 
       {/* Hero Header Card */}
-      <div className="p-5 sm:p-6 bg-gradient-to-br from-card via-card to-amber-950/20 border border-amber-500/30 rounded-2xl space-y-3 shadow-sm">
+      <div className="reading-hero space-y-4">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-[11px] font-extrabold">
             {lesson.topic}
@@ -286,7 +286,7 @@ export default function LessonDetailPage() {
           )}
         </div>
 
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-foreground tracking-tight leading-tight">
+        <h1 className="reading-title">
           {lesson.title}
         </h1>
 
@@ -321,8 +321,8 @@ export default function LessonDetailPage() {
       </div>
 
       {/* Reading Article Content */}
-      <Card className="border-border/80 shadow-sm">
-        <CardContent className="p-5 sm:p-8 space-y-4">
+      <Card className="reading-surface">
+        <CardContent className="reading-article">
           {lesson.blocks.map((block, idx) => (
             <BlockRenderer 
               key={block.id || idx} 

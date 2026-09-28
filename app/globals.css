@@ -72,16 +72,13 @@
 html { background: hsl(var(--background)); }
 body {
   background-color: hsl(var(--background));
-  background-image: linear-gradient(180deg, hsl(218 50% 6% / 0.88), hsl(218 50% 6% / 0.94)), url('/images/ccna-network-wallpaper.webp');
-  background-position: center, center 42%;
-  background-size: cover, cover;
-  background-attachment: fixed, fixed;
+  background-image: none;
 }
-.dark body { background-color: #07101e; }
-.dark .bg-card { background-color: hsl(218 40% 10% / 0.92); }
-.dark .bg-card\/90 { background-color: hsl(218 40% 10% / 0.9); }
-.dark .bg-card\/95 { background-color: hsl(218 40% 10% / 0.95); }
-.dark .bg-background { background-color: hsl(218 46% 7% / 0.94); }
+.dark body { background-color: #0b1220; }
+.dark .bg-card { background-color: #101826; }
+.dark .bg-card\/90 { background-color: rgb(16 24 38 / 0.9); }
+.dark .bg-card\/95 { background-color: rgb(16 24 38 / 0.95); }
+.dark .bg-background { background-color: #0b1220; }
 .dark .bg-muted\/20 { background-color: hsl(215 33% 15% / 0.58); }
 .dark .bg-muted\/40 { background-color: hsl(215 33% 15% / 0.72); }
 
@@ -179,6 +176,77 @@ body {
   content: attr(data-placeholder);
   color: hsl(var(--muted-foreground));
   pointer-events: none;
+}
+
+/* Calm, documentation-style reading surfaces shared by lessons, notes and topologies. */
+.dark .reading-page { color: #e6edf3; }
+.reading-page { width: 100%; max-width: 900px; margin-inline: auto; padding-bottom: 4rem; }
+.reading-hero {
+  padding: 2rem 3rem;
+  border: 1px solid rgb(148 163 184 / 0.1);
+  border-radius: 14px;
+  background: rgb(16 24 38 / 0.78);
+  box-shadow: none;
+}
+.reading-surface {
+  border: 1px solid rgb(148 163 184 / 0.1) !important;
+  border-radius: 14px !important;
+  background: rgb(15 23 42 / 0.7) !important;
+  box-shadow: none !important;
+}
+.reading-article {
+  padding: 2.5rem 3rem 5rem !important;
+  color: #e6edf3;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.reading-article > * + * { margin-top: 1.25rem; }
+.reading-article [class*="space-y-1.5"] > * + * { margin-top: 1.125rem !important; }
+.reading-article p, .reading-article .text-xs, .reading-article .text-sm {
+  color: #e6edf3;
+  font-size: 16px !important;
+  font-weight: 400;
+  line-height: 1.75 !important;
+}
+.reading-article h1 { margin: 0 0 1.5rem; font-size: 32px; font-weight: 700; line-height: 1.25; color: #f0f6fc; }
+.reading-article h2 { margin: 2.5rem 0 1rem; font-size: 24px; font-weight: 700; line-height: 1.35; color: #f0f6fc; }
+.reading-article h3 { margin: 1.875rem 0 .75rem; font-size: 19px; font-weight: 650; line-height: 1.4; color: #f0f6fc; }
+.reading-article h2.text-amber-500, .reading-article h3.text-amber-500 { color: #f0f6fc !important; }
+.reading-article p { margin: 0 0 1.125rem; }
+.reading-article strong, .reading-article b { color: #f0f6fc; font-weight: 600; }
+.reading-article ul, .reading-article ol { padding-left: 26px; margin: 16px 0 24px; }
+.reading-article li { margin-bottom: 10px; line-height: 1.7; }
+.reading-article li::marker { color: #65cde8; }
+.reading-article table { width: 100%; border-collapse: separate; border-spacing: 0; overflow: hidden; border: 1px solid rgb(148 163 184 / 0.12); border-radius: 10px; font-size: 15px; line-height: 1.65; }
+.reading-article thead { background: rgb(30 41 59 / 0.8); color: #f8fafc; }
+.reading-article th, .reading-article td { padding: 14px 16px !important; border: 0 !important; border-bottom: 1px solid rgb(148 163 184 / 0.1) !important; vertical-align: top; }
+.reading-article th { font-weight: 600 !important; }
+.reading-article tbody tr:nth-child(even) { background: rgb(148 163 184 / 0.025); }
+.reading-article tbody tr:last-child td { border-bottom: 0 !important; }
+.reading-article pre, .reading-article code { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace; }
+.reading-article pre { overflow-x: auto; padding: 18px 20px; border: 1px solid rgb(148 163 184 / 0.12); border-radius: 10px; background: #080d16; font-size: 14px; line-height: 1.7; }
+.reading-code { border-color: rgb(148 163 184 / 0.12) !important; background: #080d16 !important; }
+.reading-article .reading-code-content { font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace; font-size: 14px !important; line-height: 1.7 !important; }
+.reading-article blockquote { margin: 1.5rem 0; padding: .875rem 1rem; border: 0; border-left: 3px solid #38bdf8; border-radius: 0 8px 8px 0; background: rgb(56 189 248 / 0.06); color: #dbe7f1; }
+.reading-article .doc-display-image { margin: 1.5rem 0; }
+.reading-article .doc-display-image img { max-width: min(100%, 760px); max-height: min(70vh, 620px); }
+.reading-page .reading-title { color: #f0f6fc; font-size: 32px; font-weight: 700; line-height: 1.25; letter-spacing: -0.025em; }
+.reading-page .reading-tag { border-radius: 6px; padding: 4px 9px; font-size: 12px; }
+.dark aside { background: #0d1522; }
+aside nav a { min-height: 44px; font-size: 14px !important; }
+.dark aside nav a[class*="bg-amber-500/15"] { background-color: rgb(56 189 248 / 0.08) !important; border-color: transparent !important; border-left: 2px solid #38bdf8 !important; }
+
+@media (max-width: 1023px) {
+  .reading-hero { padding: 1.75rem 2rem; }
+  .reading-article { padding: 2rem !important; }
+}
+@media (max-width: 639px) {
+  .reading-hero { padding: 1.25rem 1.125rem; }
+  .reading-article { padding: 1.125rem 1.125rem 3rem !important; font-size: 16px; }
+  .reading-page .reading-title { font-size: 28px; }
+  .reading-article table { min-width: 600px; }
 }
 .doc-inline-image {
   display: block;
