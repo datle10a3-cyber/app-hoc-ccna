@@ -31,9 +31,16 @@ function headingInfo(value: string): { kind: 'heading' | 'step'; level: number; 
   const markdown = /^(#{1,4})\s+(.+)$/.exec(line);
   if (markdown) return { kind: /^(?:Bước|Step)\s+\d+/i.test(markdown[2]) ? 'step' : 'heading', level: markdown[1].length, content: markdown[2] };
   if (/^(?:Bước|Step)\s+\d+[.):-]?\s+\S/i.test(line)) return { kind: 'step', level: 3, content: line };
+  // Numbered steps are recognized only at the start of a line and when they read
+  // like a short label (often ending in a colon). This avoids IPs, list references,
+  // and numbers embedded in ordinary sentences becoming headings.
+  const numbered = /^(\d{1,2})\s*[.)]\s*([A-Za-zÀ-ỹ][^\n]{1,100})$/.exec(line);
+  if (numbered && (numbered[2].endsWith(':') || (!/[.!?]$/.test(numbered[2]) && numbered[2].split(/\s+/).length <= 5))) {
+    return { kind: 'step', level: 3, content: `${numbered[1]}. ${numbered[2].replace(/\s+/g, ' ')}` };
+  }
   if (/^(?:SW|R|PC|ISP)\d+$/i.test(line) || /^(?:R\d+\s+(?:chết|down)|kết quả cuối cùng)\s*:?$/i.test(line)) return { kind: 'step', level: 3, content: line };
   if (/^(?:PHẦN|PHAN|PART)\s+[A-Z0-9]+\b/i.test(line)) return { kind: 'heading', level: 2, content: line };
-  if (/^(?:[IVXLCDM]+[.)]|\d{1,2}[.)])\s+\S/i.test(line)) return { kind: 'heading', level: 2, content: line };
+  if (/^(?:[IVXLCDM]+[.)])\s+[A-Za-zÀ-ỹ][^.!?]{0,80}$/i.test(line) && line.split(/\s+/).length <= 10) return { kind: 'heading', level: 2, content: line };
   if (/^(?:MÔ HÌNH|THÔNG SỐ|CẤU HÌNH|KIỂM TRA|LỖI THƯỜNG GẶP|YÊU CẦU|BẢNG IP|GIẢI THÍCH)\b.{0,80}:?$/i.test(line)) return { kind: 'heading', level: 2, content: line };
   return null;
 }

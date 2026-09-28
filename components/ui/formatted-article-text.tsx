@@ -39,8 +39,13 @@ export function FormattedArticleText({ text, onZoomImage }: { text: string; onZo
     {parts.map((part, index) => {
       const key = `${index}-${part.kind}`;
       if (part.kind === 'code' || part.kind === 'diagram') return <CopyableBlock key={key} content={part.content} diagram={part.kind === 'diagram'} />;
-      if (part.kind === 'heading') return <h2 key={key} className="article-heading">{part.content}</h2>;
-      if (part.kind === 'step') return <h3 key={key} className="article-step">{part.content}</h3>;
+      if (part.kind === 'heading') return <h2 key={key} className="article-heading"><span>{part.content}</span></h2>;
+      if (part.kind === 'step') {
+        const numbered = /^(\d{1,2})[.)]\s+(.+)$/.exec(part.content);
+        return <h3 key={key} className={`article-step${numbered ? ' article-step-numbered' : ''}`}>
+          {numbered ? <><span className="article-step-number">{numbered[1].padStart(2, '0')}</span><span>{numbered[2]}</span></> : part.content}
+        </h3>;
+      }
       if (part.kind === 'list') return <ul key={key} className="article-list">{part.content.split('\n').map((item, itemIndex) => item.startsWith('→ ')
         ? <li key={itemIndex} className="article-arrow-item"><span aria-hidden="true">→</span>{item.slice(2)}</li>
         : <li key={itemIndex}>{item}</li>)}</ul>;
