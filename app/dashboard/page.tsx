@@ -126,8 +126,7 @@ export default function DashboardPage() {
               recentCommands.map(cmd => (
                 <Link key={cmd.id} href={`/commands/${cmd.id}`}>
                   <div className="p-2.5 rounded-lg bg-[#14120e] border border-amber-500/20 hover:border-amber-500/50 transition-colors active:scale-[0.99]">
-                    <span className="text-xs font-mono font-bold text-amber-400">{cmd.command}</span>
-                    <span className="text-[10px] text-slate-400 ml-2 font-mono">[{cmd.mode}]</span>
+                    <span className="text-xs font-mono font-bold text-amber-400">{cmd.title || cmd.command}</span>
                   </div>
                 </Link>
               ))
