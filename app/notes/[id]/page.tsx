@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
-import { FormattedInlineText } from '@/components/ui/formatted-inline-text';
+import { FormattedArticleText } from '@/components/ui/formatted-article-text';
 import { richDocumentPlainText } from '@/lib/rich-document';
 
 export default function NoteDetailPage() {
@@ -70,7 +70,7 @@ export default function NoteDetailPage() {
         {note.tags.length > 0 && <div className="flex items-center gap-1.5 flex-wrap pt-1">{note.tags.map(tag => <span key={tag} className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full"><Tag className="w-2.5 h-2.5" /> {tag}</span>)}</div>}
       </div>
 
-      <Card className="border-border/80 shadow-sm"><CardContent className="p-5 sm:p-8 space-y-4"><FormattedInlineText text={note.content} onZoomImage={setLightboxImage} className="text-xs sm:text-sm text-foreground/95 leading-relaxed font-medium" />{!note.content && <p className="text-xs text-muted-foreground text-center py-8">Ghi chú chưa có nội dung.</p>}</CardContent></Card>
+      <Card className="border-border/80 shadow-sm"><CardContent className="p-5 sm:p-8 space-y-4"><FormattedArticleText text={note.content} onZoomImage={setLightboxImage} />{!note.content && <p className="text-xs text-muted-foreground text-center py-8">Ghi chú chưa có nội dung.</p>}</CardContent></Card>
 
       {lightboxImage && <Modal isOpen={Boolean(lightboxImage)} onClose={() => setLightboxImage(null)} title="Ảnh ghi chú phóng to"><div className="space-y-3"><div className="p-2 bg-[#14120e] rounded-xl border border-border flex items-center justify-center min-h-[250px]"><img src={lightboxImage} alt={note.title} className="max-w-full max-h-[75vh] object-contain rounded-lg" /></div><div className="flex justify-end"><Button size="sm" variant="outline" onClick={() => setLightboxImage(null)}>Đóng</Button></div></div></Modal>}
     </div>

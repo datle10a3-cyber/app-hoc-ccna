@@ -12,36 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
 import { FormattedInlineText } from '@/components/ui/formatted-inline-text';
-import { isRichDocument, richDocumentPlainText } from '@/lib/rich-document';
-
-function TopologyArticleBody({ text, onZoomImage }: { text: string; onZoomImage: (url: string) => void }) {
-  if (isRichDocument(text)) {
-    return <FormattedInlineText text={text} onZoomImage={onZoomImage} className="text-sm text-foreground/95 leading-relaxed" />;
-  }
-
-  const lines = text.replace(/\r\n?/g, '\n').split('\n');
-  return <div className="space-y-1.5 text-sm text-foreground/95 leading-relaxed">
-    {lines.map((line, index) => {
-      const value = line.trim();
-      if (!value) return <div key={`gap-${index}`} className="h-2" />;
-      if (/^(?:[IVXLCDM]+\.|\d+[.)]|[A-Z]\.)\s+\S/.test(value)) {
-        return <h2 key={index} className="pt-4 first:pt-0 pb-1 border-b border-amber-500/25 text-base sm:text-lg font-black text-amber-500 dark:text-amber-400">{value}</h2>;
-      }
-      if (value.length < 90 && /:$/.test(value)) {
-        return <h3 key={index} className="pt-2 text-sm font-bold text-foreground">{value}</h3>;
-      }
-      if (/^[-•*]\s+/.test(value)) {
-        return <div key={index} className="flex gap-2 pl-2"><span className="text-amber-500">•</span><span>{value.replace(/^[-•*]\s+/, '')}</span></div>;
-      }
-      if (/^\|.*\|$/.test(value)) {
-        const cells = value.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim());
-        if (cells.every(cell => /^:?-{3,}:?$/.test(cell))) return null;
-        return <div key={index} className="overflow-x-auto rounded-md border border-border"><table className="w-full text-left text-xs"><tbody><tr>{cells.map((cell, cellIndex) => <td key={cellIndex} className="border-r border-border px-3 py-2 last:border-r-0">{cell}</td>)}</tr></tbody></table></div>;
-      }
-      return <FormattedInlineText key={index} text={value} onZoomImage={onZoomImage} className="text-sm text-foreground/95 leading-relaxed" />;
-    })}
-  </div>;
-}
+import { FormattedArticleText } from '@/components/ui/formatted-article-text';
+import { richDocumentPlainText } from '@/lib/rich-document';
 
 export default function TopologyDetailPage() {
   const params = useParams();
@@ -103,11 +75,11 @@ export default function TopologyDetailPage() {
       </div>
 
       <Card className="border-border/80 shadow-sm"><CardContent className="p-5 sm:p-8 space-y-5">
-        {descriptionAsArticle && <section className="space-y-2"><TopologyArticleBody text={topology.description} onZoomImage={setLightboxImage} /></section>}
+        {descriptionAsArticle && <section className="space-y-2"><FormattedArticleText text={topology.description} onZoomImage={setLightboxImage} /></section>}
         {(topology.nodes || []).length > 0 && <section className="space-y-2"><h2 className="text-base sm:text-lg font-black text-amber-500 flex items-center gap-2"><Network className="w-4 h-4" /> Thiết bị trong sơ đồ</h2><div className="grid grid-cols-1 sm:grid-cols-2 gap-2">{topology.nodes.map(node => <div key={node.id} className="rounded-xl border border-border bg-muted/20 p-3"><div className="font-bold text-sm">{node.label}</div><div className="text-xs text-muted-foreground">{node.type}{node.vlan ? ` · VLAN ${node.vlan}` : ''}</div>{node.ip && <div className="text-xs text-amber-400 font-mono mt-1">{node.ip}</div>}</div>)}</div></section>}
         {(topology.links || []).length > 0 && <section className="space-y-2"><h2 className="text-base sm:text-lg font-black text-amber-500 flex items-center gap-2"><Terminal className="w-4 h-4" /> Kết nối</h2><div className="space-y-2">{topology.links.map((link, index) => <div key={`${link.from}-${link.to}-${index}`} className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-sm"><span className="font-semibold">{link.from} ↔ {link.to}</span>{link.label && <span className="ml-2 text-xs text-muted-foreground">{link.label}</span>}{link.status && <Badge variant="outline" className="ml-2 text-[10px]">{link.status}</Badge>}</div>)}</div></section>}
         {(topology.ipList || []).length > 0 && <section className="space-y-2"><h2 className="text-base sm:text-lg font-black text-amber-500">Bảng địa chỉ IP</h2><div className="overflow-x-auto rounded-xl border border-border"><table className="w-full text-xs text-left"><thead className="bg-muted/40"><tr><th className="p-2">Thiết bị</th><th className="p-2">Cổng</th><th className="p-2">Địa chỉ IP</th><th className="p-2">VLAN</th></tr></thead><tbody>{(topology.ipList || []).map((entry, index) => <tr key={`${entry.device}-${entry.interfaceName}-${index}`} className="border-t border-border"><td className="p-2">{entry.device}</td><td className="p-2 font-mono">{entry.interfaceName}</td><td className="p-2 font-mono">{entry.ip}</td><td className="p-2">{entry.vlan || '—'}</td></tr>)}</tbody></table></div></section>}
-        {topology.notes && <section className="space-y-2"><h2 className="text-base sm:text-lg font-black text-amber-500">Ghi chú cấu hình</h2><TopologyArticleBody text={topology.notes} onZoomImage={setLightboxImage} /></section>}
+        {topology.notes && <section className="space-y-2"><h2 className="text-base sm:text-lg font-black text-amber-500">Ghi chú cấu hình</h2><FormattedArticleText text={topology.notes} onZoomImage={setLightboxImage} /></section>}
         {!topology.nodes?.length && !topology.links?.length && !topology.ipList?.length && !topology.notes && <p className="text-xs text-muted-foreground text-center py-8">Mô hình chưa có thông tin chi tiết.</p>}
       </CardContent></Card>
 
