@@ -65,7 +65,7 @@ export default function LearnPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(lesson => (
           <Link key={lesson.id} href={`/learn/${lesson.id}`}>
-            <Card className="h-full hover:border-primary/30 transition-colors cursor-pointer group">
+            <Card className="collection-card h-full cursor-pointer group">
               <CardContent className="p-4 min-h-20 flex items-center">
                 <h3 className="text-base font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">{lesson.title}</h3>
               </CardContent>

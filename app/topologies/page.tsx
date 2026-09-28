@@ -31,7 +31,7 @@ export default function TopologiesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map(topology => <Link key={topology.id} href={`/topologies/${topology.id}`}><Card className="h-full hover:border-primary/30 transition-colors cursor-pointer group"><CardContent className="p-4 min-h-20 flex items-center"><h3 className="text-base font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">{topology.title}</h3></CardContent></Card></Link>)}
+        {filtered.map(topology => <Link key={topology.id} href={`/topologies/${topology.id}`}><Card className="collection-card h-full cursor-pointer group"><CardContent className="p-4 min-h-20 flex items-center"><h3 className="text-base font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">{topology.title}</h3></CardContent></Card></Link>)}
       </div>
 
       {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">{topologies.length ? 'Không tìm thấy mô hình phù hợp.' : 'Chưa có mô hình mạng nào.'}</p>}

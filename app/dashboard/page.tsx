@@ -52,7 +52,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {statCards.map(s => (
           <Link key={s.label} href={s.href}>
-            <Card className="p-3.5 hover:border-amber-500/40 transition-all cursor-pointer border-border/80 shadow-xs active:scale-95">
+            <Card className="collection-card p-3.5 cursor-pointer active:scale-95">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-muted-foreground font-semibold">{s.label}</span>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
@@ -88,7 +88,7 @@ export default function DashboardPage() {
             ) : (
               recentLessons.map(l => (
                 <Link key={l.id} href={`/learn/${l.id}`}>
-                  <div className="p-3 rounded-lg border border-border/70 hover:border-amber-500/40 bg-muted/20 transition-all active:scale-[0.99]">
+                  <div className="collection-card p-3 rounded-lg transition-all active:scale-[0.99]">
                     <div className="flex items-center gap-2 mb-1">
                       <Badge variant="default" className="text-[10px] bg-amber-500/15 text-amber-500 dark:text-amber-400 border-amber-500/30">
                         {l.topic}
@@ -125,7 +125,7 @@ export default function DashboardPage() {
             ) : (
               recentCommands.map(cmd => (
                 <Link key={cmd.id} href={`/commands/${cmd.id}`}>
-                  <div className="p-2.5 rounded-lg bg-[#14120e] border border-amber-500/20 hover:border-amber-500/50 transition-colors active:scale-[0.99]">
+                  <div className="collection-card p-2.5 rounded-lg transition-all active:scale-[0.99]">
                     <span className="text-xs font-mono font-bold text-amber-400">{cmd.title || cmd.command}</span>
                   </div>
                 </Link>

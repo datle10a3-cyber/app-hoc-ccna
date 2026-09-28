@@ -39,7 +39,7 @@ export default function FavoritesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {favCommands.map(cmd => (
           <Link key={cmd.id} href={`/commands/${cmd.id}`}>
-            <Card className="hover:border-primary/30 transition-colors cursor-pointer">
+            <Card className="collection-card cursor-pointer">
               <CardContent className="p-3 flex items-center gap-2">
                 <Terminal className="w-4 h-4 text-emerald-500 shrink-0" />
                 <span className="text-xs font-mono font-semibold text-primary flex-1 truncate">{cmd.command}</span>
@@ -51,7 +51,7 @@ export default function FavoritesPage() {
 
         {favLessons.map(l => (
           <Link key={l.id} href={`/learn/${l.id}`}>
-            <Card className="hover:border-primary/30 transition-colors cursor-pointer">
+            <Card className="collection-card cursor-pointer">
               <CardContent className="p-3 flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-primary shrink-0" />
                 <span className="text-xs font-semibold text-foreground flex-1 truncate">{l.title}</span>
@@ -63,7 +63,7 @@ export default function FavoritesPage() {
 
         {favTopologies.map(t => (
           <Link key={t.id} href={`/topologies/${t.id}`}>
-            <Card className="hover:border-primary/30 transition-colors cursor-pointer">
+            <Card className="collection-card cursor-pointer">
               <CardContent className="p-3 flex items-center gap-2">
                 <Network className="w-4 h-4 text-violet-500 shrink-0" />
                 <span className="text-xs font-semibold text-foreground flex-1 truncate">{t.title}</span>
@@ -75,7 +75,7 @@ export default function FavoritesPage() {
 
         {favNotes.map(n => (
           <Link key={n.id} href="/notes">
-            <Card className="hover:border-primary/30 transition-colors cursor-pointer">
+            <Card className="collection-card cursor-pointer">
               <CardContent className="p-3 flex items-center gap-2">
                 <StickyNote className="w-4 h-4 text-amber-500 shrink-0" />
                 <span className="text-xs font-semibold text-foreground flex-1 truncate">{n.title}</span>

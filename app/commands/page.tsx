@@ -169,7 +169,7 @@ export default function CommandsPage() {
           const matchingLines = matchingCommandLines(cmd, query);
 
           return (
-            <Card key={cmd.id} className="hover:border-amber-500/40 transition-all border-border/80 shadow-xs group">
+            <Card key={cmd.id} className="collection-card group">
               <CardContent className="flex items-start gap-2 p-3 sm:p-3.5">
                 <Link href={`/commands/${encodeURIComponent(cmd.id)}`} className="flex min-w-0 flex-1 flex-col gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500" aria-label={`Xem chi tiết ${cmd.title}`}>
                   <span className="flex min-w-0 items-center justify-between gap-3">
