@@ -350,6 +350,12 @@ aside nav a { min-height: 44px; font-size: 14px !important; }
 @media (max-width: 767px) {
   .app-main { padding-bottom: calc(4rem + env(safe-area-inset-bottom)) !important; }
   .app-bottom-nav { height: calc(3.5rem + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
+  .app-header button { min-width: 44px; min-height: 44px; }
+  .app-main button { min-width: 44px; min-height: 44px; }
+  .app-main label:has(> input[type="file"]) { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; }
+  .app-main input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  .app-main textarea,
+  .app-main select { font-size: 16px !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

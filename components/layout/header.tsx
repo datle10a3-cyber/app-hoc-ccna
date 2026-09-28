@@ -106,7 +106,7 @@ export function Header({ onOpenSearch, onOpenMobileMenu }: HeaderProps) {
 
         <span className={`text-xs font-black text-amber-500 tracking-wider ${showBack ? 'hidden sm:inline' : ''}`}>CCNA</span>
         <span className={`text-muted-foreground text-xs ${showBack ? 'hidden sm:inline' : ''}`}>/</span>
-        <h1 className="text-xs font-bold text-foreground truncate max-w-[120px] sm:max-w-none">{pageTitle}</h1>
+        <h1 className={`text-xs font-bold text-foreground truncate max-w-[120px] sm:max-w-none ${showBack ? 'hidden sm:block' : ''}`}>{pageTitle}</h1>
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-2">
