@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { ArrowLeft, Search, Moon, Sun, Menu, Database, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { repository } from '@/lib/db/repository';
+import { supabase } from '@/lib/db/supabase-client';
 import { useToast } from '@/components/ui/toast';
 import { InstallAppButton } from '@/components/pwa/install-app-button';
 
@@ -34,10 +35,12 @@ export function Header({ onOpenSearch, onOpenMobileMenu }: HeaderProps) {
   const { theme, setTheme } = useTheme();
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSqlConfigured, setIsSqlConfigured] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     setIsSqlConfigured(repository.isCloudSyncEnabled());
+    void supabase?.auth.getUser().then(({ data }) => setIsSignedIn(Boolean(data.user)));
   }, []);
 
   useEffect(() => {
@@ -121,7 +124,7 @@ export function Header({ onOpenSearch, onOpenMobileMenu }: HeaderProps) {
             ) : (
               <CheckCircle2 className="w-3 h-3 text-amber-500" />
             )}
-            <span className="hidden sm:inline">SQL Active</span>
+            <span className="hidden sm:inline">{isSignedIn ? 'Synced' : 'Đăng nhập để sync'}</span>
           </button>
         ) : (
           <span 

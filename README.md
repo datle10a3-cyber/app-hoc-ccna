@@ -51,21 +51,23 @@ Groq là nhà cung cấp chính. Khi Groq trả lỗi hạn mức, trợ lý th�
 
 ## 🔑 Supabase Database & Cấu Hình .env
 
-Ứng dụng chạy theo chế độ **Dual-Mode**: Hoạt động ngay lập tức tại local nhờ cơ chế lưu trữ localStorage/IndexedDB, đồng thời tự động kết nối Supabase PostgreSQL khi cấu hình biến môi trường.
+Ứng dụng chạy local ngay cả khi chưa cấu hình cloud. Khi cấu hình Supabase, người dùng đăng nhập bằng tài khoản riêng để đồng bộ dữ liệu qua Supabase Auth, PostgreSQL và RLS.
 
 Tạo file `.env.local`:
 
 ```env
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 
-# Biến môi trường Supabase (Tùy chọn)
+# Biến môi trường Supabase (tùy chọn; cần để bật đồng bộ)
 NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="sb_publishable_..."
 ```
 
-Mã nguồn có hai file SQL: [`supabase_schema.sql`](supabase_schema.sql) là schema mà phần đồng bộ hiện tại sử dụng (`lessons`, `cisco_commands`, `topologies`, `personal_notes`); [`database/schema.sql`](database/schema.sql) là schema cũ để tham khảo. Không chạy cả hai schema trên cùng một cơ sở dữ liệu. Schema hiện tại mở quyền đọc/ghi cho anon, chỉ phù hợp môi trường cá nhân kiểm soát truy cập; không kết nối schema này với một bản triển khai công khai khi chưa thêm xác thực và chính sách RLS theo người dùng.
+Trên một Supabase project mới, mở SQL Editor và chạy [`supabase_secure_schema.sql`](supabase_secure_schema.sql), sau đó đặt `NEXT_PUBLIC_SUPABASE_URL` và publishable key trong Vercel (Production, Preview nếu cần) và redeploy. Không dùng `SUPABASE_SERVICE_ROLE_KEY` ở trình duyệt/Vercel client. Project cần bật Auth Email/password; thêm URL production và localhost vào Auth → URL Configuration → Redirect URLs để xác nhận email hoạt động. Sau đó tạo tài khoản từ **Cài Đặt → Tài khoản đồng bộ**, đăng nhập cùng tài khoản trên từng thiết bị và đồng bộ sẽ bắt đầu. Lần đăng nhập đầu tiên đưa dữ liệu local hiện có lên tài khoản và gộp theo thời điểm cập nhật.
 
-Khi không cấu hình Supabase, ứng dụng lưu bài học và lệnh riêng trong trình duyệt. Dữ liệu đã nhập trên máy không tự đi theo mã nguồn lên GitHub hoặc Vercel; dùng **Cài đặt → Xuất File JSON** nếu cần sao lưu rồi nhập ở trình duyệt khác.
+Ứng dụng dùng các bảng `ccna_*` có RLS bắt buộc theo `auth.uid()`; [`supabase_schema.sql`](supabase_schema.sql) là bản sao tương thích của SQL bảo mật ở trên, còn [`database/schema.sql`](database/schema.sql) là schema cũ và không dùng. Dữ liệu local theo tài khoản; bài học, lệnh Cisco, mô hình, ghi chú và ảnh đồng bộ hóa. Thay đổi trực tiếp được gửi lên cloud; thiết bị khác nhận qua Realtime hoặc lần đồng bộ khi mở lại ứng dụng. Xóa offline được giữ thành tombstone và áp dụng khi kết nối lại.
+
+Khi chưa cấu hình Supabase hoặc chưa đăng nhập, dữ liệu vẫn chỉ nằm trên thiết bị đó. Dùng **Cài đặt → Xuất File JSON** để sao lưu/chuyển dữ liệu thủ công.
 
 ---
 

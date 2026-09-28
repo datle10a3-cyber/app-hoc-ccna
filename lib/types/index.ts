@@ -95,6 +95,7 @@ export interface CiscoCommand {
   tags: string[];
   isFavorite: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface TopologyNode {
@@ -138,6 +139,7 @@ export interface Topology {
   relatedCommandIds?: string[];
   isFavorite: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export type NoteType = string;

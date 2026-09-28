@@ -1,3 +1,5 @@
+-- DEPRECATED: Do not run this legacy schema. Use ../supabase_secure_schema.sql for the current application.
+--
 -- CCNA NOTES Database Schema for Supabase PostgreSQL
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
