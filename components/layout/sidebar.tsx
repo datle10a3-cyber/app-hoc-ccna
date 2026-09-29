@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   BookOpen,
   Terminal,
+  BookOpenText,
   Network,
   StickyNote,
   Star,
@@ -32,6 +33,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
     { name: 'Tổng Quan', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Bài Học', href: '/learn', icon: BookOpen },
     { name: 'Lệnh Cisco', href: '/commands', icon: Terminal },
+    { name: 'Giải Thích Lệnh', href: '/commands/explainer', icon: BookOpenText },
     { name: 'Mô Hình Mạng', href: '/topologies', icon: Network },
     { name: 'Ghi Chú', href: '/notes', icon: StickyNote },
     { name: 'Trợ lý AI', href: '/assistant', icon: Sparkles },
@@ -98,7 +100,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         {/* Nav Items */}
         <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
           {navItems.map(item => {
-            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
+            const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(`${item.href}/`) && !(item.href === '/commands' && pathname === '/commands/explainer'));
             const Icon = item.icon;
 
             return (

@@ -17,6 +17,9 @@ const KEYS = {
 const DATA_KEYS = [KEYS.LESSONS, KEYS.COMMANDS, KEYS.TOPOLOGIES, KEYS.NOTES, KEYS.IMAGES, KEYS.TOMBSTONES, KEYS.SYNCED_IDS] as const;
 let activeUserId: string | null = null;
 const scopedKey = (key: string) => activeUserId ? `${key}:user:${activeUserId}` : key;
+function notifyDataChanged(): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('ccna:data-sync'));
+}
 
 function getItem<T>(key: string, fallback: T): T {
   if (typeof window === 'undefined') return fallback;
@@ -223,6 +226,7 @@ export const repository = {
       });
 
       setItem(KEYS.LAST_SYNC, new Date().toISOString());
+      notifyDataChanged();
       return { success: true, message: `Đồng bộ hoàn tất: ${formatted.length} bài học, ${formattedCmds.length} lệnh, ${formattedTopos.length} mô hình, ${formattedNotes.length} ghi chú.` };
     } catch (err: any) {
       console.error('Supabase sync error:', err);
@@ -247,6 +251,7 @@ export const repository = {
       updated = [lesson, ...list];
     }
     setItemOrThrow(KEYS.LESSONS, updated);
+    notifyDataChanged();
 
     // Sync to Supabase in background
     if (supabase && isSupabaseConfigured) {
@@ -276,6 +281,7 @@ export const repository = {
     markDeleted('lessons', id);
     const list = repository.getLessons().filter(l => l.id !== id);
     setItem(KEYS.LESSONS, list);
+    notifyDataChanged();
     if (supabase && isSupabaseConfigured) {
       void currentUserId().then(user_id => user_id ? supabase!.from('ccna_lessons').delete().eq('id', id).eq('user_id', user_id) : null).then(result => {
         const error = result && result.error;
@@ -307,6 +313,7 @@ export const repository = {
       updated = [{ ...cmd, updatedAt: new Date().toISOString() }, ...list];
     }
     setItem(KEYS.COMMANDS, updated);
+    notifyDataChanged();
 
     if (supabase && isSupabaseConfigured) {
       void currentUserId().then(user_id => user_id ? supabase!.from('ccna_cisco_commands').upsert({
@@ -338,6 +345,7 @@ export const repository = {
     markDeleted('commands', id);
     const list = repository.getCommands().filter(c => c.id !== id);
     setItem(KEYS.COMMANDS, list);
+    notifyDataChanged();
     if (supabase && isSupabaseConfigured) {
       void currentUserId().then(user_id => user_id ? supabase!.from('ccna_cisco_commands').delete().eq('id', id).eq('user_id', user_id) : null).then(result => {
         const error = result && result.error;
@@ -363,6 +371,7 @@ export const repository = {
       updated = [{ ...topo, updatedAt: new Date().toISOString() }, ...list];
     }
     setItem(KEYS.TOPOLOGIES, updated);
+    notifyDataChanged();
 
     if (supabase && isSupabaseConfigured) {
       void currentUserId().then(user_id => user_id ? supabase!.from('ccna_topologies').upsert({
@@ -392,6 +401,7 @@ export const repository = {
     markDeleted('topologies', id);
     const list = repository.getTopologies().filter(t => t.id !== id);
     setItem(KEYS.TOPOLOGIES, list);
+    notifyDataChanged();
     if (supabase && isSupabaseConfigured) {
       void currentUserId().then(user_id => user_id ? supabase!.from('ccna_topologies').delete().eq('id', id).eq('user_id', user_id) : null).then(result => {
         const error = result && result.error;
@@ -417,6 +427,7 @@ export const repository = {
       updated = [note, ...list];
     }
     setItemOrThrow(KEYS.NOTES, updated);
+    notifyDataChanged();
 
     if (supabase && isSupabaseConfigured) {
       void currentUserId().then(user_id => user_id ? supabase!.from('ccna_personal_notes').upsert({
@@ -442,6 +453,7 @@ export const repository = {
     markDeleted('notes', id);
     const list = repository.getNotes().filter(n => n.id !== id);
     setItem(KEYS.NOTES, list);
+    notifyDataChanged();
     if (supabase && isSupabaseConfigured) {
       void currentUserId().then(user_id => user_id ? supabase!.from('ccna_personal_notes').delete().eq('id', id).eq('user_id', user_id) : null).then(result => {
         const error = result && result.error;
@@ -551,6 +563,7 @@ export const repository = {
       if (repository.isCloudSyncEnabled()) {
         repository.syncFromCloud();
       }
+      notifyDataChanged();
 
       return { success: true, count, message: `Khôi phục thành công ${count} mục dữ liệu.` };
     } catch (err: any) {

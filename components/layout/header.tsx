@@ -61,7 +61,7 @@ export function Header({ onOpenSearch, onOpenMobileMenu }: HeaderProps) {
   }, [pathname]);
 
   const segment = pathname.split('/').filter(Boolean)[0] || 'dashboard';
-  const pageTitle = PAGE_TITLES[segment] || segment;
+  const pageTitle = pathname === '/commands/explainer' ? 'Tra Cứu & Giải Nghĩa Lệnh' : PAGE_TITLES[segment] || segment;
   const showBack = !['dashboard', 'login', 'register'].includes(segment);
   const backFallback = pathname.split('/').filter(Boolean).length > 1 ? `/${segment}` : '/dashboard';
 
