@@ -98,6 +98,17 @@ export interface CiscoCommand {
   updatedAt?: string;
 }
 
+export interface CiscoCommandExplanation {
+  commandPattern: string;
+  explanation: string;
+  category: string;
+  configMode: string;
+  relatedCommands: string[];
+  userEdited: boolean;
+  confidence?: number;
+  updatedAt: string;
+}
+
 export interface TopologyNode {
   id: string;
   label: string;

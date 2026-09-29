@@ -1,5 +1,5 @@
 import { demoLessons, demoCommands, demoNotes, demoTopologies } from '../seed/minimal-seed-data';
-import { Lesson, CiscoCommand, Topology, PersonalNote, DashboardStats } from '../types';
+import { Lesson, CiscoCommand, CiscoCommandExplanation, Topology, PersonalNote, DashboardStats } from '../types';
 import { supabase, isSupabaseConfigured } from './supabase-client';
 import { matchesCommandItem } from '../command-items';
 
@@ -11,10 +11,11 @@ const KEYS = {
   IMAGES: 'ccna_notes_images',
   TOMBSTONES: 'ccna_notes_deleted',
   SYNCED_IDS: 'ccna_notes_synced_ids',
+  COMMAND_EXPLANATIONS: 'ccna_notes_command_explanations',
   LAST_SYNC: 'ccna_notes_last_sync'
 };
 
-const DATA_KEYS = [KEYS.LESSONS, KEYS.COMMANDS, KEYS.TOPOLOGIES, KEYS.NOTES, KEYS.IMAGES, KEYS.TOMBSTONES, KEYS.SYNCED_IDS] as const;
+const DATA_KEYS = [KEYS.LESSONS, KEYS.COMMANDS, KEYS.TOPOLOGIES, KEYS.NOTES, KEYS.IMAGES, KEYS.TOMBSTONES, KEYS.SYNCED_IDS, KEYS.COMMAND_EXPLANATIONS] as const;
 let activeUserId: string | null = null;
 const scopedKey = (key: string) => activeUserId ? `${key}:user:${activeUserId}` : key;
 function notifyDataChanged(): void {
@@ -55,6 +56,19 @@ function markDeleted(type: keyof DeletedRows, id: string): void {
 function rowTimestamp(row: any): number {
   const timestamp = Date.parse(row.updated_at || row.created_at || '');
   return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function mapRemoteCommandExplanation(row: any): CiscoCommandExplanation {
+  return {
+    commandPattern: row.command_pattern,
+    explanation: row.explanation,
+    category: row.category || 'Cisco IOS',
+    configMode: row.config_mode || 'Không xác định',
+    relatedCommands: Array.isArray(row.related_commands) ? row.related_commands : [],
+    userEdited: Boolean(row.user_edited),
+    confidence: typeof row.confidence === 'number' ? row.confidence : undefined,
+    updatedAt: row.updated_at || new Date(0).toISOString()
+  };
 }
 
 function mergeRows<T extends { id: string }>(local: T[], remote: any[], mapRemote: (row: any) => T): T[] {
@@ -198,6 +212,47 @@ export const repository = {
           updatedAt: n.updated_at
         }));
       setItem(KEYS.NOTES, formattedNotes);
+
+      // This table is an additive feature: when an older Supabase project has not run
+      // the migration yet, keep local explanations and let the existing sync continue.
+      const explanationResult = await supabase.from('ccna_command_explanations').select('*').eq('user_id', userId);
+      if (!explanationResult.error) {
+        const remoteExplanations = (explanationResult.data || []).map(mapRemoteCommandExplanation);
+        const remoteByPattern = new Map(remoteExplanations.map(row => [row.commandPattern, row]));
+        const mergedByPattern = new Map(remoteExplanations.map(row => [row.commandPattern, row]));
+        const localExplanations = repository.getCommandExplanations();
+        for (const local of localExplanations) {
+          const remote = remoteByPattern.get(local.commandPattern);
+          const sameEditType = remote?.userEdited === local.userEdited;
+          const localWins = !remote || (local.userEdited && !remote.userEdited) ||
+            (sameEditType && (Date.parse(local.updatedAt) || 0) >= (Date.parse(remote.updatedAt) || 0));
+          if (localWins) mergedByPattern.set(local.commandPattern, local);
+        }
+        const mergedExplanations = Array.from(mergedByPattern.values());
+        setItem(KEYS.COMMAND_EXPLANATIONS, mergedExplanations);
+        const explanationWrites = mergedExplanations.filter(local => {
+          const remote = remoteByPattern.get(local.commandPattern);
+          const sameEditType = remote?.userEdited === local.userEdited;
+          return !remote || (local.userEdited && !remote.userEdited) ||
+            (sameEditType && (Date.parse(local.updatedAt) || 0) > (Date.parse(remote.updatedAt) || 0));
+        }).map(row => supabase!.from('ccna_command_explanations').upsert({
+          user_id: userId,
+          command_pattern: row.commandPattern,
+          explanation: row.explanation,
+          category: row.category,
+          config_mode: row.configMode,
+          related_commands: row.relatedCommands,
+          user_edited: row.userEdited,
+          confidence: row.confidence ?? null,
+          updated_at: row.updatedAt
+        }));
+        const explanationWriteResults = await Promise.all(explanationWrites);
+        const explanationWriteError = explanationWriteResults.find(result => result.error)?.error;
+        if (explanationWriteError) console.warn('Could not sync command explanations:', explanationWriteError.message);
+      } else if (!['42P01', 'PGRST205'].includes(explanationResult.error.code || '')) {
+        console.warn('Could not read synced command explanations:', explanationResult.error.message);
+      }
+
       const images = getItem<Record<string, string>>(KEYS.IMAGES, {});
       for (const image of remoteImages || []) if (!images[image.id]) images[image.id] = image.data_url;
       setItem(KEYS.IMAGES, images);
@@ -297,6 +352,53 @@ export const repository = {
     const cleaned = stored.filter(command => !demoIds.has(command.id));
     if (cleaned.length !== stored.length) setItem(KEYS.COMMANDS, cleaned);
     return cleaned;
+  },
+  getCommandExplanations: (): CiscoCommandExplanation[] => getItem<CiscoCommandExplanation[]>(KEYS.COMMAND_EXPLANATIONS, []),
+  saveCommandExplanation: (record: Omit<CiscoCommandExplanation, 'updatedAt'> & { updatedAt?: string }): boolean => {
+    const existing = repository.getCommandExplanations();
+    const current = existing.find(item => item.commandPattern === record.commandPattern);
+    // A generated explanation must never replace an explanation the learner edited.
+    if (current?.userEdited && !record.userEdited) return false;
+
+    const saved: CiscoCommandExplanation = { ...record, updatedAt: record.updatedAt || new Date().toISOString() };
+    setItem(KEYS.COMMAND_EXPLANATIONS, [
+      ...existing.filter(item => item.commandPattern !== saved.commandPattern), saved
+    ]);
+    notifyDataChanged();
+
+    if (supabase && isSupabaseConfigured) {
+      void currentUserId().then(async user_id => {
+        if (!user_id) return;
+        const { data: remote, error: readError } = await supabase!.from('ccna_command_explanations')
+          .select('user_edited,explanation,category,config_mode,related_commands,confidence,updated_at')
+          .eq('user_id', user_id).eq('command_pattern', saved.commandPattern).maybeSingle();
+        if (!readError && remote?.user_edited && (!saved.userEdited || (Date.parse(remote.updated_at) || 0) > (Date.parse(saved.updatedAt) || 0))) {
+          const merged = repository.getCommandExplanations().filter(item => item.commandPattern !== saved.commandPattern);
+          merged.push(mapRemoteCommandExplanation({ ...remote, command_pattern: saved.commandPattern }));
+          setItem(KEYS.COMMAND_EXPLANATIONS, merged);
+          notifyDataChanged();
+          return;
+        }
+        if (readError && !['42P01', 'PGRST205'].includes(readError.code || '')) {
+          console.warn('Could not read synced command explanation:', readError.message);
+          return;
+        }
+        if (readError) return;
+        const { error } = await supabase!.from('ccna_command_explanations').upsert({
+          user_id,
+          command_pattern: saved.commandPattern,
+          explanation: saved.explanation,
+          category: saved.category,
+          config_mode: saved.configMode,
+          related_commands: saved.relatedCommands,
+          user_edited: saved.userEdited,
+          confidence: saved.confidence ?? null,
+          updated_at: saved.updatedAt
+        });
+        if (error && !['42P01', 'PGRST205'].includes(error.code || '')) console.warn('Could not sync command explanation:', error.message);
+      }).catch(error => console.warn('Could not sync command explanation:', error));
+    }
+    return true;
   },
   getCommandById: (id: string): CiscoCommand | undefined => {
     return repository.getCommands().find(c => c.id === id);
