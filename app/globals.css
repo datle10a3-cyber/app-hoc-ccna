@@ -103,6 +103,25 @@ body {
   height: calc(3.5rem + env(safe-area-inset-bottom));
 }
 
+/* Consistent, comfortable controls on lesson, note, topology and command forms. */
+.record-form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+.record-form select { min-height: 44px; padding-block: .6rem; padding-inline: .75rem; font-size: .925rem; border-radius: .65rem; }
+.record-form textarea { min-height: 96px; padding: .75rem; font-size: .925rem; line-height: 1.6; border-radius: .65rem; }
+.record-form label { font-size: .8125rem; line-height: 1.4; }
+.record-form button[type="submit"] { min-height: 44px; }
+.record-form input[type="file"] { font-size: .875rem; }
+
+.collection-item { display: flex; align-items: center; }
+.collection-item-actions { display: flex; flex-shrink: 0; gap: .375rem; padding: .5rem .75rem .5rem 0; }
+.collection-item-actions > button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-width: 44px; min-height: 44px; padding: 0 .75rem; border: 1px solid hsl(var(--border)); border-radius: .6rem; font-size: .75rem; font-weight: 600; color: hsl(var(--muted-foreground)); transition: background-color .15s, color .15s; }
+.collection-item-actions > button:hover { background: hsl(var(--muted)); color: hsl(var(--primary)); }
+.collection-item-actions > button[data-danger]:hover { background: hsl(var(--destructive) / .1); color: hsl(var(--destructive)); }
+@media (max-width: 639px) {
+  .collection-item { flex-direction: column; align-items: stretch; }
+  .collection-item-actions { padding: .25rem .5rem; border-top: 1px solid hsl(var(--border) / .65); gap: .25rem; }
+  .collection-item-actions > button { flex: 1; border: 0; min-height: 44px; }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -332,6 +351,7 @@ aside nav a { min-height: 44px; font-size: 14px !important; }
 }
 .collection-card:hover::before { opacity: 1; }
 .collection-card:focus-within { outline: 2px solid rgb(56 189 248 / 0.55); outline-offset: 2px; }
+@media (hover: none) { .collection-card:hover { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   .collection-card, .collection-card::before { transition: none; }
   .collection-card:hover { transform: none; }
@@ -377,6 +397,8 @@ aside nav a { min-height: 44px; font-size: 14px !important; }
   .app-bottom-nav { height: calc(3.5rem + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); }
   .app-header button { min-width: 44px; min-height: 44px; }
   .app-main button { min-width: 44px; min-height: 44px; }
+  .app-main input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
+  .app-main select { min-height: 44px; padding-block: .6rem; }
   .app-main label:has(> input[type="file"]) { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; }
   .app-main input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]),
   .app-main textarea,

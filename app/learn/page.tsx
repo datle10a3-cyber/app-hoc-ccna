@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { BookOpen, Search, Plus } from 'lucide-react';
 import { repository } from '@/lib/db/repository';
 import { Lesson } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+import { CollectionItem } from '@/components/ui/collection-item';
 import { Button } from '@/components/ui/button';
 
 export default function LearnPage() {
@@ -44,8 +44,8 @@ export default function LearnPage() {
 
       {/* Filter */}
       <div className="flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-muted-foreground" />
+        <div className="relative min-w-0 flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
           <input
             type="text"
             value={query}
@@ -57,7 +57,7 @@ export default function LearnPage() {
         <select
           value={selectedTopic}
           onChange={e => setSelectedTopic(e.target.value)}
-          className="px-2.5 py-1.5 bg-muted/30 border border-input rounded-md text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+          className="max-w-[45%] min-w-0 truncate px-2.5 py-1.5 bg-muted/30 border border-input rounded-md text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         >
           <option value="All">Tất cả</option>
           {topicsList.map(t => <option key={t} value={t}>{t}</option>)}
@@ -65,16 +65,8 @@ export default function LearnPage() {
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map(lesson => (
-          <Link key={lesson.id} href={`/learn/${lesson.id}`}>
-            <Card className="collection-card h-full cursor-pointer group">
-              <CardContent className="p-4 min-h-20 flex items-center">
-                <h3 className="text-base font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">{lesson.title}</h3>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+        {filtered.map(lesson => <CollectionItem key={lesson.id} href={`/learn/${encodeURIComponent(lesson.id)}`} title={lesson.title} icon={BookOpen} badge={lesson.topic} />)}
       </div>
 
       {filtered.length === 0 && (

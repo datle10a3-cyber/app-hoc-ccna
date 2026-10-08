@@ -52,10 +52,10 @@ export default function NoteDetailPage() {
       <div className="flex items-center justify-between gap-2 border-b border-border/60 pb-3">
         <Link href="/notes"><Button variant="ghost" size="sm" className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="w-4 h-4" /> Tất cả ghi chú</Button></Link>
         <div className="flex items-center gap-1.5">
-          <Link href={`/notes/new?edit=${encodeURIComponent(note.id)}`}><Button size="sm" variant="outline" className="gap-1 text-xs" title="Chỉnh sửa ghi chú"><Edit3 className="w-3.5 h-3.5 text-amber-500" /><span className="hidden sm:inline">Sửa ghi chú</span></Button></Link>
+          <Link href={`/notes/new?edit=${encodeURIComponent(note.id)}`}><Button size="md" variant="outline" className="gap-2 text-sm" title="Chỉnh sửa ghi chú"><Edit3 className="w-4 h-4 text-amber-500" /><span className="hidden sm:inline">Sửa ghi chú</span></Button></Link>
           <Button size="sm" variant="outline" onClick={handleCopy} className="gap-1 text-xs" title="Sao chép ghi chú">{copied ? <Check className="w-3.5 h-3.5 text-amber-500" /> : <Share2 className="w-3.5 h-3.5" />}<span className="hidden sm:inline">{copied ? 'Đã copy' : 'Sao chép'}</span></Button>
           <Button variant={isFav ? 'default' : 'outline'} size="sm" onClick={() => { repository.toggleFavorite('note', note.id); setIsFav(value => !value); toast(isFav ? 'Bỏ yêu thích' : 'Đã thích ⭐', note.title, 'info'); }} className="gap-1 text-xs"><Star className={`w-3.5 h-3.5 ${isFav ? 'fill-current text-amber-400' : ''}`} /><span className="hidden sm:inline">{isFav ? 'Đã thích' : 'Yêu thích'}</span></Button>
-          <Button variant="outline" size="sm" onClick={handleDelete} className="text-xs text-destructive hover:bg-destructive/10" title="Xóa ghi chú"><Trash2 className="w-3.5 h-3.5" /></Button>
+          <Button variant="outline" size="md" onClick={handleDelete} className="gap-2 text-sm text-destructive hover:bg-destructive/10" title="Xóa ghi chú"><Trash2 className="w-4 h-4" /><span className="hidden sm:inline">Xóa</span></Button>
         </div>
       </div>
 

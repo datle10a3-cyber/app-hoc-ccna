@@ -53,8 +53,8 @@ export default function CommandDetailPage() {
             <ArrowLeft className="w-3.5 h-3.5" /> Quay lại thư viện lệnh
           </Button>
         </Link>
-        <Button variant="outline" size="sm" onClick={handleDelete} className="gap-1 text-xs text-destructive hover:bg-destructive/10">
-          <Trash2 className="w-3.5 h-3.5" /> Xóa bộ lệnh
+        <Button variant="outline" size="md" onClick={handleDelete} className="gap-2 text-sm text-destructive hover:bg-destructive/10">
+          <Trash2 className="w-4 h-4" /> Xóa bộ lệnh
         </Button>
       </div>
 

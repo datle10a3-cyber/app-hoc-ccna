@@ -27,6 +27,7 @@ function loadTypeScript(relativePath) {
 
 const index = loadTypeScript('lib/explained-command-index.ts');
 const validation = loadTypeScript('lib/ai/command-explanation-validation.ts');
+const cliFormatting = loadTypeScript('lib/ai/format-cli.ts');
 
 function build(commands = '', extraLessons = []) {
   return index.buildExplainedCommandIndex({
@@ -127,6 +128,33 @@ test('uses nearby routing context to keep EIGRP network statements distinct from
 test('does not promote numbers in ordinary prose to Cisco commands', () => {
   const rows = build('VLAN 10 dùng mạng 10.10.10.0/24. HSRP group 1 có Virtual IP 10.10.10.1.\nSố bước: 1, 2, 3.');
   assert.deepEqual(rows, []);
+});
+
+test('formats bare Cisco show command lists as copyable CLI blocks and keeps explanations readable', () => {
+  const formatted = cliFormatting.formatCiscoCliMarkdown([
+    'show version – hiển thị phần cứng, IOS, uptime',
+    'show running-config — xem cấu hình hiện tại',
+    'show vlan brief – danh sách VLAN và cổng thành viên',
+    'Kiểm tra theo thứ tự trên switch.'
+  ].join('\n'));
+  assert.match(formatted, /```cisco-explained\nshow version\t/);
+  assert.match(formatted, /show vlan brief\tdanh sách VLAN và cổng thành viên/);
+  assert.match(formatted, /Kiểm tra theo thứ tự trên switch/);
+  assert.match(cliFormatting.formatCiscoCliMarkdown('- **show vlan brief**: Xem VLAN.'), /show vlan brief\tXem VLAN\./);
+  assert.equal(cliFormatting.formatCiscoCliMarkdown('show interfaces hiển thị trạng thái'), 'show interfaces hiển thị trạng thái');
+});
+
+test('keeps WAN, spaced interface IDs and HSRP commands in CLI while preserving prose and existing fences', () => {
+  const commands = ['no ip domain-lookup', 'interface fastEthernet 0/1', 'no ip address', 'pppoe-client dial-pool-number 1', 'interface Dialer1', 'encapsulation ppp', 'dialer pool 1', 'ppp authentication chap callin', 'standby 30 priority 100', 'standby 30 preempt', 'exit'];
+  const input = commands.join('\n');
+  const formatted = cliFormatting.formatCiscoCliMarkdown(input);
+  assert.equal(formatted, '```cisco\n' + input + '\n```\n');
+  const range = cliFormatting.formatCiscoCliMarkdown('interface range fa0/1 - 5');
+  assert.match(range, /interface range fa0\/1 - 5\n```/);
+  const fenced = '```cisco\nencapsulation ppp\n```';
+  assert.equal(cliFormatting.formatCiscoCliMarkdown(fenced), fenced);
+  const prose = '1. PC kiểm tra IP 192.168.1.2.\nVLAN 10 dùng cho nhân viên.\nshow vlan brief — Xem VLAN trên switch.';
+  assert.match(cliFormatting.formatCiscoCliMarkdown(prose), /^1\. PC kiểm tra IP 192\.168\.1\.2\.\nVLAN 10 dùng cho nhân viên\./);
 });
 
 test('accepts only concise, specific structured AI explanations for requested patterns', () => {

@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { 
-  Terminal, Search, Plus, Copy, Check, Trash2, PlusCircle, ChevronRight, Edit3
+  Terminal, Search, Plus, Copy, Check, Trash2, PlusCircle, Edit3
 } from 'lucide-react';
 import { repository } from '@/lib/db/repository';
 import { CiscoCommand, CommandStep } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+import { CollectionItem } from '@/components/ui/collection-item';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
 import { useToast } from '@/components/ui/toast';
@@ -38,7 +37,9 @@ export default function CommandsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    setCommands(repository.getCommands());
+    const refresh = () => setCommands(repository.getCommands());
+    refresh();
+    window.addEventListener('ccna:data-sync', refresh);
     try {
       const savedDraft = localStorage.getItem(COMMAND_FORM_DRAFT_KEY);
       if (savedDraft) {
@@ -64,6 +65,7 @@ export default function CommandsPage() {
     } finally {
       setDraftRestored(true);
     }
+    return () => window.removeEventListener('ccna:data-sync', refresh);
   }, []);
 
   // Keep the open form across route changes, reloads, and browser tab suspension.
@@ -119,9 +121,11 @@ export default function CommandsPage() {
   };
 
   const handleCopyText = (id: string, text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+    void navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(id);
+      toast('Đã copy cấu hình', '', 'success');
+      setTimeout(() => setCopiedId(null), 2000);
+    }).catch(() => toast('Không thể copy', 'Hãy kiểm tra quyền truy cập clipboard.', 'warning'));
   };
 
   const handleAddStep = () => {
@@ -159,13 +163,14 @@ export default function CommandsPage() {
       command: cmdTitle.trim(),
       title: cmdTitle.trim(),
       description: validSteps[0]?.explanation || '',
-      category: cmdTitle.trim(),
-      device: 'Cisco L2 Switch',
+      category: editingCmd?.category || cmdTitle.trim(),
+      device: editingCmd?.device || 'Cisco L2 Switch',
       mode: editingCmd?.mode || 'Global Configuration',
       imageUrl: editingCmd?.imageUrl,
+      notes: editingCmd?.notes,
       example: allCmdsCombined,
       steps: validSteps,
-      tags: [cmdTitle.trim()],
+      tags: editingCmd?.tags || [cmdTitle.trim()],
       isFavorite: editingCmd ? editingCmd.isFavorite : false,
       createdAt: editingCmd ? editingCmd.createdAt : new Date().toISOString()
     };
@@ -206,7 +211,7 @@ export default function CommandsPage() {
 
       {/* Filter & Search Bar */}
       <div className="relative">
-        <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
         <input
           type="text"
           value={query}
@@ -217,60 +222,28 @@ export default function CommandsPage() {
       </div>
 
       {/* Command List Grid */}
-      <div className="space-y-4">
+      <div className="space-y-2.5">
         {filtered.map(cmd => {
           const allCommandsText = commandItemText(cmd);
           const matchingLines = matchingCommandLines(cmd, query);
+          const firstCommand = allCommandsText.split(/\r?\n/).find(line => line.trim() && !line.trim().startsWith('#'))?.trim() || '';
 
           return (
-            <Card key={cmd.id} className="collection-card group">
-              <CardContent className="flex items-start gap-2 p-3 sm:p-3.5">
-                <Link href={`/commands/${encodeURIComponent(cmd.id)}`} className="flex min-w-0 flex-1 flex-col gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500" aria-label={`Xem chi tiết ${cmd.title}`}>
-                  <span className="flex min-w-0 items-center justify-between gap-3">
-                    <h2 className="text-sm font-bold text-foreground break-words leading-snug group-hover:text-amber-500">{cmd.title}</h2>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-amber-500" />
-                  </span>
-                  <span className="line-clamp-2 text-xs text-muted-foreground break-words">
-                    {cmd.steps?.length
-                      ? `${cmd.steps.length} mục · ${cmd.steps.find(step => step.explanation)?.explanation || cmd.steps.find(step => step.command)?.command || 'Xem nội dung chi tiết'}`
-                      : cmd.description || (allCommandsText ? 'Xem nội dung lệnh' : 'Chưa có lệnh.')}
-                  </span>
-                  {!!matchingLines.length && <span className="flex flex-wrap gap-1.5" aria-label="Lệnh khớp tìm kiếm">
-                    {matchingLines.map((line, lineIndex) => <code key={`${line}-${lineIndex}`} className="max-w-full break-all rounded border border-amber-500/20 bg-amber-500/10 px-2 py-1 text-[11px] text-amber-400">{line}</code>)}
-                  </span>}
-                </Link>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEdit(cmd)} 
-                      className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-amber-500 transition-colors" 
-                      title="Sửa"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-                    {allCommandsText && <button
-                      type="button"
-                      onClick={() => handleCopyText(`all-${cmd.id}`, allCommandsText)} 
-                      className="p-1 rounded bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                      title="Copy tất cả"
-                    >
-                      {copiedId === `all-${cmd.id}` ? (
-                        <Check className="w-3.5 h-3.5 text-amber-500" />
-                      ) : (
-                        <Copy className="w-3.5 h-3.5" />
-                      )}
-                    </button>}
-                    <button 
-                      type="button"
-                      onClick={() => handleDelete(cmd.id)} 
-                      className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-destructive transition-colors" 
-                      title="Xóa"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-              </CardContent>
-            </Card>
+            <CollectionItem key={cmd.id} href={`/commands/${encodeURIComponent(cmd.id)}`} title={cmd.title} icon={Terminal}
+              badge={cmd.steps?.length ? `${cmd.steps.length} phần` : undefined}
+              preview={matchingLines.length ? <span className="flex flex-wrap gap-1" aria-label="Lệnh khớp tìm kiếm">
+                {matchingLines.slice(0, 2).map((line, index) => <code key={`${line}-${index}`} className="max-w-full break-words rounded bg-primary/10 px-1.5 font-mono text-[11px] text-primary [overflow-wrap:anywhere]">{line}</code>)}
+                {matchingLines.length > 2 && <span className="text-[11px]">+{matchingLines.length - 2}</span>}
+              </span> : <code className="block truncate font-mono text-[11px]">{firstCommand || cmd.description || 'Mở để xem nội dung'}</code>}
+              actions={<>
+                <button type="button" onClick={() => handleOpenEdit(cmd)} aria-label={`Sửa ${cmd.title}`}><Edit3 className="h-4 w-4" />Sửa</button>
+                {allCommandsText && <button type="button" onClick={() => handleCopyText(`all-${cmd.id}`, allCommandsText)} aria-label={`Copy ${cmd.title}`}>
+                  {copiedId === `all-${cmd.id}` ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+                  {copiedId === `all-${cmd.id}` ? 'Đã copy' : 'Copy'}
+                </button>}
+                <button type="button" data-danger onClick={() => handleDelete(cmd.id)} aria-label={`Xóa ${cmd.title}`}><Trash2 className="h-4 w-4" />Xóa</button>
+              </>}
+            />
           );
         })}
       </div>
@@ -290,10 +263,11 @@ export default function CommandsPage() {
         onClose={handleCloseForm}
         title={editingCmd ? "Sửa item lệnh" : "Thêm item lệnh"}
       >
-        <form onSubmit={handleSave} className="space-y-4 max-h-[78vh] overflow-y-auto pr-1">
+        <form onSubmit={handleSave} className="record-form space-y-5">
           <div>
-            <label className="text-xs font-bold text-foreground block mb-1">Tiêu đề *</label>
+            <label htmlFor="command-title" className="text-xs font-bold text-foreground block mb-1">Tiêu đề *</label>
             <input 
+              id="command-title"
               type="text" 
               value={cmdTitle} 
               onChange={e => setCmdTitle(e.target.value)} 
@@ -311,7 +285,7 @@ export default function CommandsPage() {
                 variant="outline" 
                 size="sm" 
                 onClick={handleAddStep}
-                className="text-[11px] h-7 gap-1 text-amber-500 border-amber-500/40 hover:bg-amber-500/10 font-bold"
+                className="min-h-11 gap-1 text-amber-500 border-amber-500/40 hover:bg-amber-500/10 font-bold"
               >
                 <PlusCircle className="w-3.5 h-3.5" /> Thêm lệnh
               </Button>
@@ -325,7 +299,7 @@ export default function CommandsPage() {
                     <button 
                       type="button" 
                       onClick={() => handleRemoveStep(idx)}
-                      className="text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 font-medium"
+                      className="min-h-11 px-2 text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 font-medium"
                     >
                       <Trash2 className="w-3.5 h-3.5" /> Xóa
                     </button>
@@ -333,8 +307,9 @@ export default function CommandsPage() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Giải thích</label>
+                  <label htmlFor={`step-explanation-${step.id}`} className="text-[11px] font-bold text-muted-foreground block mb-1">Giải thích</label>
                   <textarea
+                    id={`step-explanation-${step.id}`}
                     value={step.explanation} 
                     onChange={e => handleStepChange(idx, 'explanation', e.target.value)}
                     rows={2}
@@ -343,8 +318,9 @@ export default function CommandsPage() {
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-muted-foreground block mb-1">Lệnh</label>
+                  <label htmlFor={`step-command-${step.id}`} className="text-[11px] font-bold text-muted-foreground block mb-1">Lệnh</label>
                   <textarea 
+                    id={`step-command-${step.id}`}
                     value={step.command} 
                     onChange={e => handleStepChange(idx, 'command', e.target.value)}
                     placeholder="Nhập lệnh Cisco..."
@@ -356,7 +332,7 @@ export default function CommandsPage() {
             ))}
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-border">
+          <div className="sticky -bottom-4 flex justify-end gap-2 border-t border-border bg-card py-3 sm:-bottom-6">
             <Button type="button" variant="outline" size="sm" onClick={handleCloseForm}>Hủy</Button>
             <Button type="submit" size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-xs">
               {editingCmd ? 'Cập nhật item' : 'Lưu item'}

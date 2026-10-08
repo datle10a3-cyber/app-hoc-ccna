@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Network, Plus, Search } from 'lucide-react';
 import { repository } from '@/lib/db/repository';
 import { Topology } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
+import { CollectionItem } from '@/components/ui/collection-item';
 import { Button } from '@/components/ui/button';
 
 export default function TopologiesPage() {
@@ -31,12 +31,12 @@ export default function TopologiesPage() {
       </div>
 
       <div className="relative">
-        <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
         <input type="text" value={query} onChange={event => setQuery(event.target.value)} placeholder="Tìm mô hình..." className="w-full pl-8 pr-3 py-1.5 bg-muted/30 border border-input rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-ring" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map(topology => <Link key={topology.id} href={`/topologies/${topology.id}`}><Card className="collection-card h-full cursor-pointer group"><CardContent className="p-4 min-h-20 flex items-center"><h3 className="text-base font-semibold leading-snug text-foreground group-hover:text-primary transition-colors">{topology.title}</h3></CardContent></Card></Link>)}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+        {filtered.map(topology => <CollectionItem key={topology.id} href={`/topologies/${encodeURIComponent(topology.id)}`} title={topology.title} icon={Network} badge={`${topology.devices.length} thiết bị`} />)}
       </div>
 
       {filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">{topologies.length ? 'Không tìm thấy mô hình phù hợp.' : 'Chưa có mô hình mạng nào.'}</p>}

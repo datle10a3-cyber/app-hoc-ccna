@@ -98,10 +98,10 @@ function TopologyForm() {
   };
 
   return (
-    <form onSubmit={handleSave} className="max-w-3xl mx-auto space-y-4 pb-12">
-      <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={() => router.back()} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 font-medium"><ArrowLeft className="w-3.5 h-3.5" /> Quay lại</button>
-        <Button type="submit" size="sm" className="gap-1.5 text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"><Save className="w-3.5 h-3.5" /> {topology ? 'Cập Nhật Mô Hình' : 'Lưu Mô Hình'}</Button>
+    <form onSubmit={handleSave} className="record-form max-w-3xl mx-auto space-y-5 pb-12">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card/80 p-3 sm:p-4">
+        <button type="button" onClick={() => router.back()} className="inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"><ArrowLeft className="w-4 h-4" /> Quay lại</button>
+        <Button type="submit" size="lg" className="gap-2 text-sm bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"><Save className="w-4 h-4" /> {topology ? 'Cập Nhật Mô Hình' : 'Lưu Mô Hình'}</Button>
       </div>
 
       <Card><CardContent className="p-4 space-y-3">

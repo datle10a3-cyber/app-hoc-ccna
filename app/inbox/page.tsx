@@ -206,13 +206,13 @@ export default function SmartPastePage() {
           <h1 className="text-lg font-extrabold text-foreground flex items-center gap-2"><Inbox className="w-5 h-5 text-amber-500" /> Smart Paste</h1>
           <p className="text-xs text-muted-foreground">Dán nội dung, giữ nguyên định dạng và chọn nơi lưu.</p>
         </div>
-        {step === 2 && <Button size="sm" onClick={handleSave} disabled={!title.trim()} className="gap-1.5 text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"><CheckCircle2 className="w-3.5 h-3.5" /> Lưu vào {selectedDestination.label}</Button>}
+        {step === 2 && <Button size="md" onClick={handleSave} disabled={!title.trim()} className="gap-2 text-sm bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"><CheckCircle2 className="w-4 h-4" /> Lưu vào {selectedDestination.label}</Button>}
       </div>
 
       {step === 1 && <Card><CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between"><span className="text-xs font-bold text-foreground">Dán nội dung hoặc ảnh ở đây</span><button onClick={() => setRawText(SAMPLE)} className="text-xs text-amber-500 hover:underline font-bold">Nạp bài mẫu</button></div>
         <VisualDocEditor initialText={rawText} onChange={setRawText} onDocItemsChange={setDocItems} />
-        <div className="flex justify-end pt-2"><Button onClick={handleParse} className="gap-1.5 text-xs bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-md">Nhận diện nội dung <ArrowRight className="w-3.5 h-3.5" /></Button></div>
+        <div className="flex justify-end pt-2"><Button size="md" onClick={handleParse} className="gap-2 text-sm bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-md">Nhận diện nội dung <ArrowRight className="w-4 h-4" /></Button></div>
       </CardContent></Card>}
 
       {step === 2 && <div className="space-y-4">

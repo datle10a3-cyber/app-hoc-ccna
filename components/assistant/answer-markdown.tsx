@@ -33,23 +33,29 @@ function CodeBlock({ children }: { children: React.ReactNode }) {
   const codeElement = React.Children.toArray(children).find(node => React.isValidElement(node));
   const className = React.isValidElement<{ className?: string }>(codeElement) ? codeElement.props.className || '' : '';
   const language = className.match(/language-([\w-]+)/)?.[1] || '';
-  const isCisco = /^(?:cisco|cli|ios)$/i.test(language) || (!language && /^(?:enable|configure terminal|conf t|interface|switchport|vlan\s+\d+|show\s+|hostname|ip route|no shutdown)/im.test(raw));
+  const explained = language === 'cisco-explained';
+  const rows = explained ? raw.split('\n').map(line => { const tab = line.indexOf('\t'); return { command: tab < 0 ? line : line.slice(0, tab), note: tab < 0 ? '' : line.slice(tab + 1) }; }) : [];
+  const copyText = explained ? rows.map(row => row.command).join('\n') : raw;
+  const isCisco = /^(?:cisco|cisco-explained|cli|ios)$/i.test(language) || (!language && /^(?:enable|configure terminal|conf t|interface|switchport|vlan\s+\d+|show\s+|hostname|ip route|no shutdown)/im.test(raw));
   const label = isCisco ? 'Cisco CLI' : language ? language.toUpperCase() : 'Mã lệnh';
-  return <div className="group my-4 min-w-0 overflow-hidden rounded-xl border border-amber-500/30 bg-[#14120e] shadow-sm">
-    <div className="flex items-center justify-between border-b border-amber-500/15 bg-amber-500/[0.04] px-3 py-1.5">
-      <span className="inline-flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wide text-amber-400"><Terminal className="h-3.5 w-3.5" /> {label}</span>
+  return <div className="group my-4 min-w-0 overflow-hidden rounded-xl border border-cyan-400/25 bg-[#080d16] shadow-sm">
+    <div className="flex min-h-11 items-center justify-between border-b border-cyan-400/15 bg-slate-800/70 px-3">
+      <span className="inline-flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-wide text-cyan-300"><Terminal className="h-4 w-4" /> {label}</span>
     <button type="button" onClick={async () => {
       try {
-        await navigator.clipboard.writeText(raw);
+        await navigator.clipboard.writeText(copyText);
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
       } catch { /* Clipboard permission may be unavailable. */ }
-    }} className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-[#241d11] px-2 py-1 font-semibold text-amber-300 hover:bg-amber-500/20" aria-label="Sao chép khối lệnh">
-      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-      <span className="text-[11px]">{copied ? 'Đã chép' : 'Sao chép'}</span>
+    }} className="inline-flex min-h-9 items-center gap-2 rounded-md border border-cyan-400/20 bg-slate-950/70 px-3 font-semibold text-cyan-200 hover:bg-cyan-400/10" aria-label="Sao chép khối lệnh">
+      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      <span className="text-xs">{copied ? 'Đã chép' : 'Sao chép'}</span>
     </button>
     </div>
-    <pre className="whitespace-pre-wrap break-words px-4 py-3 font-mono text-[13px] leading-6 text-amber-200 [overflow-wrap:anywhere] [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit">{children}</pre>
+    {explained ? <div className="divide-y divide-slate-700/50">{rows.map((row, index) => <div key={index} className="grid min-w-0 gap-1 px-3 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] sm:gap-4 sm:px-4">
+      <code className="min-w-0 whitespace-pre-wrap font-mono text-[12px] leading-5 text-emerald-300 [overflow-wrap:anywhere] sm:text-[13px]">{row.command}</code>
+      {row.note && <span className="text-[13px] leading-5 text-slate-300 [overflow-wrap:anywhere]">{row.note}</span>}
+    </div>)}</div> : <pre className="whitespace-pre-wrap break-words px-3 py-3.5 font-mono text-[13px] leading-6 text-emerald-300 [overflow-wrap:anywhere] sm:px-4 sm:text-sm [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit">{children}</pre>}
   </div>;
 }
 

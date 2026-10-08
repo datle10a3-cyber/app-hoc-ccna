@@ -181,8 +181,8 @@ export default function LessonDetailPage() {
 
         <div className="flex items-center gap-1.5">
           <Link href={`/learn/new?edit=${lesson.id}`}>
-            <Button size="sm" variant="outline" className="gap-1 text-xs" title="Chỉnh sửa bài học này">
-              <Edit3 className="w-3.5 h-3.5 text-amber-500" />
+            <Button size="md" variant="outline" className="gap-2 text-sm" title="Chỉnh sửa bài học này">
+              <Edit3 className="w-4 h-4 text-amber-500" />
               <span className="hidden sm:inline">Sửa bài học</span>
             </Button>
           </Link>
@@ -216,10 +216,10 @@ export default function LessonDetailPage() {
                 router.push('/learn');
               }
             }}
-            className="text-xs text-destructive hover:bg-destructive/10"
+            className="min-w-10 gap-2 text-sm text-destructive hover:bg-destructive/10"
             title="Xóa bài học"
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-4 h-4" /><span className="hidden sm:inline">Xóa</span>
           </Button>
         </div>
       </div>
